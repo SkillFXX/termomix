@@ -101,8 +101,17 @@
   .tabs { flex: none; display: flex; gap: 2px; padding: 6px 8px 0; background: var(--bg); border-bottom: 1px solid var(--border); overflow-x: auto; }
   .tab { display: flex; align-items: center; gap: 8px; max-width: 220px; height: 32px; padding: 0 8px 0 12px; border-radius: 8px 8px 0 0; color: var(--muted); cursor: default; border: 1px solid transparent; border-bottom: 0; }
   .tab:hover { background: var(--surface); }
-  .tab.on { position: relative; background: var(--surface); color: var(--text); border-color: var(--border); }
-  .tab.on::after { content: ''; position: absolute; left: 8px; right: 8px; top: -1px; height: 2px; border-radius: 2px; background: var(--grad); }
+  .tab.on {
+    color: var(--text);
+    border-color: var(--border);
+    border-top-color: transparent;
+    /* Le filet dégradé est un fond : il est donc découpé par les coins arrondis de l'onglet. */
+    background-image: var(--grad), linear-gradient(var(--surface), var(--surface));
+    background-size: 100% 2px, 100% 100%;
+    background-repeat: no-repeat;
+    background-origin: border-box;
+    background-clip: border-box;
+  }
   .tt { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .x { display: grid; place-items: center; width: 18px; height: 18px; padding: 0; background: none; border: 0; border-radius: 4px; color: var(--faint); }
   .x:hover { background: var(--surface-3); color: var(--text); }
