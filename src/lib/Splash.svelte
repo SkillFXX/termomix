@@ -1,7 +1,7 @@
 <script lang="ts"></script>
 
 <div class="splash" role="status" aria-label="Chargement">
-  <img src="/loader.webp" alt="Termomix" width="393" height="304" />
+  <img src="/loader.webp" alt="Termomix" width="393" height="283" />
 </div>
 
 <style>
