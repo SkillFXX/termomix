@@ -10,10 +10,11 @@
   --faint: #5c6489;
   --accent: #4fd3ff;
   --accent-strong: #2fbdf0;
-  --accent-ink: #061320;
+  --accent-ink: #060d18;
   --violet: #9a74f5;
   --magenta: #d65cf0;
-  --grad: linear-gradient(120deg, #4fd3ff 0%, #7f8cf8 50%, #b46cf5 100%);
+  /* Dégradé de marque : contraste mini 7:1 avec --accent-ink sur toute sa longueur (vérifié). */
+  --grad: linear-gradient(115deg, #45d2ff 0%, #7b97ff 50%, #b085ff 100%);
   --danger: #f2667f;
   --success: #46d39a;
   --warn: #f0b95a;
@@ -22,6 +23,11 @@
   --brand: 'Sora Variable', 'Inter Variable', sans-serif;
   --mono: 'JetBrains Mono', ui-monospace, monospace;
   color-scheme: dark;
+}
+
+/* Interpolation perceptuelle (OKLab) quand elle est disponible : transitions plus propres, sans zone boueuse au milieu. */
+@supports (background: linear-gradient(in oklab, red, blue)) {
+  :root { --grad: linear-gradient(115deg in oklab, #45d2ff 0%, #7b97ff 50%, #b085ff 100%); }
 }
 
 * { box-sizing: border-box; }
