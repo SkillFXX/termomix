@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { app, updateSettings } from './state.svelte';
+  import { defaultSettings } from './api';
+  import { app, confirmDlg, toast, updateSettings } from './state.svelte';
   import { t } from './i18n.svelte';
   import Modal from './Modal.svelte';
   import Icon from './Icon.svelte';
@@ -17,6 +18,12 @@
   let s = $derived(app.settings);
   const num = (e: Event, min: number, max: number) => Math.min(max, Math.max(min, Number((e.currentTarget as HTMLInputElement).value) || min));
   const close = () => (app.settingsOpen = false);
+
+  async function reset() {
+    if (!(await confirmDlg(t('Réinitialiser les réglages ?'), t('Tous les réglages reviennent à leurs valeurs par défaut. Vos serveurs, macros et données ne sont pas modifiés.'), false))) return;
+    await updateSettings({ ...defaultSettings });
+    toast(t('Réglages réinitialisés'), 'ok');
+  }
 </script>
 
 <Modal title={t('Réglages')} width={760} onclose={close} flush>
@@ -25,6 +32,8 @@
       {#each tabs as tb}
         <button class:on={app.settingsTab === tb.id} onclick={() => (app.settingsTab = tb.id)}><Icon name={tb.icon} size={15} /> {t(tb.label)}</button>
       {/each}
+      <span class="grow"></span>
+      <button class="reset" onclick={reset}><Icon name="refresh" size={15} /> {t('Réinitialiser')}</button>
     </nav>
 
     <div class="content">
@@ -126,6 +135,8 @@
   .layout { display: flex; min-height: 440px; }
   nav { width: 170px; flex: none; padding: 12px 8px; border-right: 1px solid var(--border); display: flex; flex-direction: column; gap: 2px; }
   nav button { display: flex; align-items: center; gap: 9px; height: 32px; padding: 0 10px; background: none; border: 0; border-radius: 7px; color: var(--muted); font-weight: 500; text-align: left; }
+  .grow { flex: 1; }
+  nav .reset { margin-top: 8px; border-top: 1px solid var(--border); border-radius: 0 0 7px 7px; height: 38px; }
   nav button:hover { background: var(--surface-2); color: var(--text); }
   nav button.on { background: var(--surface-2); color: var(--text); }
   .content { flex: 1; min-width: 0; padding: 18px 24px 22px; overflow: auto; max-height: calc(100vh - 160px); display: flex; flex-direction: column; gap: 4px; }

@@ -179,6 +179,10 @@ const en: Record<string, string> = {
   'Interface': 'Interface',
   'Moteur SSH': 'SSH engine',
   'Chiffrement': 'Encryption',
+  'Réinitialiser': 'Reset',
+  'Réinitialiser les réglages ?': 'Reset settings?',
+  'Tous les réglages reviennent à leurs valeurs par défaut. Vos serveurs, macros et données ne sont pas modifiés.': 'All settings go back to their default values. Your servers, macros and data are not affected.',
+  'Réglages réinitialisés': 'Settings reset',
 
   // Export / import
   'La phrase secrète doit faire au moins 8 caractères.': 'The passphrase must be at least 8 characters long.',
