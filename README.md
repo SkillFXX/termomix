@@ -33,3 +33,9 @@ Base chiffrée `termomix.db` + `device.key` dans le dossier de données de l'app
 la connexion est refusée si elles changent.
 
 L'icône source (1024 px) est dans `branding/` ; les icônes de l'application se régénèrent avec `npx tauri icon branding/icon-1024.png`.
+
+## Licence
+
+Le code est publié sous licence [MIT](LICENSE).
+
+Le logo et l'identité visuelle de Termomix (`public/`, `branding/`, `docs/logo.png`, icônes de l'application) sont exclus de cette licence : tous droits réservés. Les logos de distributions affichés dans l'application appartiennent à leurs propriétaires respectifs. Les polices (Inter, Sora, JetBrains Mono) sont distribuées sous licence SIL OFL.
