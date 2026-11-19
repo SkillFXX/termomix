@@ -30,4 +30,4 @@ Base chiffrée `termomix.db` + `device.key` dans le dossier de données de l'app
 (`~/.local/share/app.termomix.desktop`). Les empreintes d'hôtes sont mémorisées à la première connexion (TOFU) et
 la connexion est refusée si elles changent.
 
-Les sources originales des logos sont dans `_src/`.
+L'icône source (1024 px) est dans `branding/` ; les icônes de l'application se régénèrent avec `npx tauri icon branding/icon-1024.png`.

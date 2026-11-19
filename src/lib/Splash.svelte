@@ -5,6 +5,7 @@
 </div>
 
 <style>
-  .splash { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; background: var(--bg); }
+  .splash { animation: in 0.25s ease-out; position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; background: var(--bg); }
+  @keyframes in { from { opacity: 0; } }
   img { max-width: 60vw; height: auto; user-select: none; -webkit-user-drag: none; }
 </style>

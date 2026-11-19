@@ -18,7 +18,7 @@
   let splash = $state(true);
 
   onMount(() => {
-    const min = new Promise((r) => setTimeout(r, 1800)); // laisse l'animation de chargement se jouer
+    const min = new Promise((r) => setTimeout(r, 3000)); // une boucle complète de l'animation (30 images x 100 ms)
     Promise.all([api.getState(), min])
       .then(([s]) => { apply(s); app.ready = true; })
       .catch((e) => toast(String(e), 'error'))
@@ -81,7 +81,8 @@
   .tabs { flex: none; display: flex; gap: 2px; padding: 6px 8px 0; background: var(--bg); border-bottom: 1px solid var(--border); overflow-x: auto; }
   .tab { display: flex; align-items: center; gap: 8px; max-width: 220px; height: 32px; padding: 0 8px 0 12px; border-radius: 8px 8px 0 0; color: var(--muted); cursor: default; border: 1px solid transparent; border-bottom: 0; }
   .tab:hover { background: var(--surface); }
-  .tab.on { background: var(--surface); color: var(--text); border-color: var(--border); }
+  .tab.on { position: relative; background: var(--surface); color: var(--text); border-color: var(--border); }
+  .tab.on::after { content: ''; position: absolute; left: 8px; right: 8px; top: -1px; height: 2px; border-radius: 2px; background: var(--grad); }
   .tt { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .x { display: grid; place-items: center; width: 18px; height: 18px; padding: 0; background: none; border: 0; border-radius: 4px; color: var(--faint); }
   .x:hover { background: var(--surface-3); color: var(--text); }

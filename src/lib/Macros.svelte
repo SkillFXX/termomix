@@ -53,7 +53,7 @@
 <style>
   .page { height: 100%; overflow: auto; padding: 28px 32px 40px; display: flex; flex-direction: column; gap: 14px; }
   header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 8px; }
-  h1 { font-size: 20px; font-weight: 650; letter-spacing: -0.01em; }
+  h1 { font-size: 22px; font-weight: 600; letter-spacing: -0.01em; }
   .macro { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; }
   .head { display: flex; justify-content: space-between; align-items: flex-start; }
   .name { font-weight: 600; }

@@ -171,9 +171,9 @@
   .list.loading { opacity: 0.5; }
   .item { display: grid; grid-template-columns: 20px 1fr auto 62px; gap: 8px; align-items: center; padding: 5px 8px; border-radius: 6px; cursor: default; }
   .item:hover { background: var(--surface-2); }
-  .item.sel { background: rgba(82, 199, 245, 0.14); }
+  .item.sel { background: rgba(127, 140, 248, 0.16); }
   .ic { color: var(--faint); display: inline-flex; }
-  .ic.dir { color: var(--accent); }
+  .ic.dir { color: var(--violet); }
   .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .sz, .dt { font-size: 11.5px; color: var(--faint); text-align: right; white-space: nowrap; }
   .empty { padding: 24px; text-align: center; color: var(--faint); }

@@ -143,7 +143,7 @@
 
   {#if !app.servers.length}
     <div class="welcome">
-      <img src="/logo-mark.png" alt="" width="72" height="72" />
+      <img src="/logo-full.png" alt="Termomix" width="260" />
       <h2>Aucun serveur pour le moment</h2>
       <p class="muted">Ajoutez votre premier serveur, ou importez vos données depuis un autre ordinateur.</p>
       <button class="btn primary" onclick={() => (editing = null)}><Icon name="plus" /> Ajouter un serveur</button>
@@ -193,7 +193,7 @@
 <style>
   .page { height: 100%; overflow: auto; padding: 28px 32px 40px; display: flex; flex-direction: column; gap: 22px; }
   header { display: flex; justify-content: space-between; align-items: flex-end; }
-  h1 { font-size: 20px; font-weight: 650; letter-spacing: -0.01em; }
+  h1 { font-size: 22px; font-weight: 600; letter-spacing: -0.01em; }
   .actions { display: flex; gap: 8px; }
   .bar { display: flex; gap: 12px; }
   .search, .quick { position: relative; display: flex; align-items: center; gap: 8px; color: var(--faint); }
@@ -212,8 +212,8 @@
   .count { font-size: 11px; color: var(--faint); }
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 10px; }
   .card { position: relative; display: flex; gap: 12px; align-items: center; padding: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; cursor: pointer; transition: border-color 0.12s, background 0.12s; }
-  .card:hover { background: var(--surface-2); border-color: var(--border-strong); }
-  .avatar { flex: none; width: 36px; height: 36px; border-radius: 8px; background: var(--surface-3); display: grid; place-items: center; font-weight: 650; color: var(--accent); }
+  .card:hover { background: var(--surface-2); border-color: #4a537f; box-shadow: 0 0 24px rgba(110, 120, 250, 0.12); }
+  .avatar { flex: none; width: 36px; height: 36px; border-radius: 8px; background: linear-gradient(var(--surface-2), var(--surface-2)) padding-box, var(--grad) border-box; border: 1px solid transparent; display: grid; place-items: center; font-family: var(--brand); font-weight: 650; color: var(--text); }
   .info { min-width: 0; flex: 1; }
   .name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .addr { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

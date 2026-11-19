@@ -42,9 +42,9 @@
   let disposed = false;
 
   const theme = {
-    background: '#0d0f14', foreground: '#dfe3ec', cursor: '#52c7f5', cursorAccent: '#0d0f14',
-    selectionBackground: 'rgba(82,199,245,0.28)',
-    black: '#1a1e2a', red: '#f2667f', green: '#46d39a', yellow: '#f0b95a', blue: '#6aa8ff', magenta: '#a98bff', cyan: '#52c7f5', white: '#dfe3ec',
+    background: '#0b0d15', foreground: '#dfe3f2', cursor: '#7f8cf8', cursorAccent: '#0b0d15',
+    selectionBackground: 'rgba(127,140,248,0.32)',
+    black: '#1a1e2a', red: '#f2667f', green: '#46d39a', yellow: '#f0b95a', blue: '#6aa8ff', magenta: '#b46cf5', cyan: '#52c7f5', white: '#dfe3ec',
     brightBlack: '#5d6579', brightRed: '#ff8097', brightGreen: '#6fe6b4', brightYellow: '#f7cd85', brightBlue: '#8dbcff', brightMagenta: '#c0a8ff', brightCyan: '#85dcfa', brightWhite: '#ffffff',
   };
 
@@ -318,11 +318,11 @@
   .menu .mc { color: var(--faint); font-size: 11px; }
   .menu p { padding: 10px; color: var(--muted); font-size: 12px; max-width: 240px; }
   .main { flex: 1; min-height: 0; display: flex; }
-  .termbox { position: relative; flex: 1; min-width: 0; padding: 8px 0 4px 12px; background: var(--bg); }
+  .termbox { position: relative; flex: 1; min-width: 0; padding: 8px 0 4px 12px; background: #0b0d15; }
   .term { height: 100%; }
   .term :global(.xterm-viewport) { background: transparent !important; }
   .split { width: 5px; cursor: col-resize; background: var(--border); flex: none; }
-  .split:hover { background: var(--accent); }
+  .split:hover { background: var(--grad); }
   .side { flex: none; min-width: 0; background: var(--surface); }
   .searchbar { position: absolute; top: 10px; right: 18px; display: flex; gap: 2px; align-items: center; padding: 4px; background: var(--surface-2); border: 1px solid var(--border-strong); border-radius: 10px; width: 300px; }
   .searchbar .input { height: 26px; border: 0; background: transparent; }
@@ -331,6 +331,6 @@
   .panel h3 { font-size: 14px; }
   .err { display: flex; gap: 8px; color: var(--danger); line-height: 1.4; }
   .err :global(svg) { flex: none; margin-top: 1px; }
-  .spinner { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--surface-3); border-top-color: var(--accent); animation: spin 0.8s linear infinite; }
+  .spinner { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--surface-3); border-top-color: #7f8cf8; animation: spin 0.8s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
 </style>
