@@ -58,20 +58,24 @@ button { cursor: pointer; }
 }
 .btn:hover { background: var(--surface-3); border-color: var(--border-strong); }
 .btn:disabled { opacity: 0.5; cursor: default; }
-/* Reflet rapide : boutons principaux et cartes de serveur. Déclenché par main.ts à l'entrée du pointeur ;
-   il va toujours au bout de son trajet, même si la souris sort en cours de route (pas de coupure nette). */
-.btn.primary, .card { position: relative; overflow: hidden; isolation: isolate; }
-.btn.primary::after, .card::after {
-  content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
-  background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, 0.55) 50%, transparent 65%);
-  transform: translateX(-110%);
+/* Reflet rapide : boutons principaux et cartes de serveur.
+   Le reflet est une couche de fond animée (background-position), sans pseudo-élément ni rognage :
+   rien n'est promu sur une couche séparée, donc ni bordure qui clignote ni texte qui bouge d'un demi-pixel.
+   Lancé par main.ts à l'entrée du pointeur, il va toujours au bout de son trajet. */
+.btn.primary {
+  background-color: transparent;
+  background-image: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, 0.55) 50%, transparent 65%), var(--grad);
+  background-size: 300% 100%, 100% 100%;
+  background-repeat: no-repeat;
+  background-position: 0% 0, 0 0;
+  border-color: transparent; color: var(--accent-ink); font-weight: 600;
 }
-.card::after { background: linear-gradient(105deg, transparent 38%, rgba(255, 255, 255, 0.07) 50%, transparent 62%); }
-.sweeping::after { animation: sweep 0.45s ease-out; }
-@keyframes sweep { from { transform: translateX(-110%); } to { transform: translateX(110%); } }
-@media (prefers-reduced-motion: reduce) { .sweeping::after { animation: none; } }
-.btn.primary { background: var(--grad); border-color: transparent; color: var(--accent-ink); font-weight: 600; }
-.btn.primary:hover { filter: brightness(1.06); }
+.btn.primary:disabled { background-image: none; background-color: var(--surface-3); color: var(--muted); opacity: 1; border-color: var(--border); }
+.sweeping.btn { animation: sweep-btn 0.45s ease-out; }
+.sweeping.card { animation: sweep-card 0.5s ease-out; }
+@keyframes sweep-btn { from { background-position: 100% 0, 0 0; } to { background-position: 0% 0, 0 0; } }
+@keyframes sweep-card { from { background-position: 100% 0; } to { background-position: 0% 0; } }
+@media (prefers-reduced-motion: reduce) { .sweeping { animation: none !important; } }
 .btn.danger { color: var(--danger); }
 .btn.ghost { background: transparent; border-color: transparent; color: var(--muted); }
 .btn.ghost:hover { background: var(--surface-2); color: var(--text); }
