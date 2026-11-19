@@ -171,6 +171,8 @@ struct ConnectReq {
     secret: Option<String>,
     cols: u32,
     rows: u32,
+    /// Identifiant de tentative : permet au frontend de suivre les étapes de connexion.
+    attempt: Option<String>,
 }
 
 #[tauri::command]
@@ -206,7 +208,15 @@ async fn ssh_connect(
         let db = store.db.lock().unwrap();
         (db.settings.keepalive, db.settings.connect_timeout)
     };
-    let info = ssh::open(&server, expected, ka, to).await?;
+    let phase_app = app.clone();
+    let attempt = req.attempt.clone();
+    let phase = move |p: &str| {
+        if let Some(a) = &attempt {
+            let _ = tauri::Emitter::emit(&phase_app, "ssh-phase", ssh::Phase { attempt: a.clone(), phase: p.into() });
+        }
+    };
+    let info = ssh::open(&server, expected, ka, to, &phase).await?;
+    phase("shell");
 
     let id = new_id();
     let startup = server.startup_command.clone();

@@ -9,7 +9,8 @@ const srv = (id: string, name: string, host: string, g: string | null, k = false
 
 export function installMock() {
   mockWindows('main');
-  mockIPC((cmd, args: any) => {
+  mockIPC(async (cmd, args: any) => {
+    if (cmd === 'ssh_connect' && location.search.includes('slow')) await new Promise((r) => setTimeout(r, 600000));
     if (cmd === 'ssh_connect') return { session_id: 'mock', fingerprint: 'SHA256:mock', new_host: false };
     if (cmd === 'sftp_list')
       return {

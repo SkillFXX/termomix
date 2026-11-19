@@ -137,7 +137,7 @@ export const api = {
   forgetHostKey: (host: string, port: number) => invoke<void>('forget_host_key', { host, port }),
 
   sshConnect: (
-    req: { server_id?: string; adhoc?: Server; secret?: string; cols: number; rows: number },
+    req: { server_id?: string; adhoc?: Server; secret?: string; cols: number; rows: number; attempt?: string },
     onData: (bytes: Uint8Array) => void,
   ) => {
     const ch = new Channel<ArrayBuffer>();

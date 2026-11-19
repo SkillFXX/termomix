@@ -69,6 +69,12 @@ pub struct Closed {
     pub clean: bool,
 }
 
+#[derive(Serialize, Clone)]
+pub struct Phase {
+    pub attempt: String,
+    pub phase: String,
+}
+
 #[derive(Serialize)]
 pub struct Connected {
     pub session_id: String,
@@ -83,7 +89,13 @@ pub struct ConnectInfo {
 }
 
 /// Ouvre la connexion TCP + SSH et authentifie. Ne crée pas de shell.
-pub async fn open(server: &Server, expected_fp: Option<String>, keepalive: u32, timeout: u32) -> Result<ConnectInfo> {
+pub async fn open(
+    server: &Server,
+    expected_fp: Option<String>,
+    keepalive: u32,
+    timeout: u32,
+    phase: &(dyn Fn(&str) + Send + Sync),
+) -> Result<ConnectInfo> {
     let cfg = Arc::new(client::Config {
         keepalive_interval: (keepalive > 0).then(|| Duration::from_secs(keepalive as u64)),
         keepalive_max: 4,
@@ -111,6 +123,7 @@ pub async fn open(server: &Server, expected_fp: Option<String>, keepalive: u32, 
         Ok(Ok(h)) => h,
     };
 
+    phase("auth");
     let ok = match server.auth {
         AuthKind::Password => {
             let pw = server.password.clone().unwrap_or_default();

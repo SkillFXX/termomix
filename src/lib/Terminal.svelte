@@ -11,6 +11,7 @@
   import { t } from './i18n.svelte';
   import Icon from './Icon.svelte';
   import Sftp from './Sftp.svelte';
+  import ConnectLoader from './ConnectLoader.svelte';
 
   let { tab, active }: { tab: Tab; active: boolean } = $props();
   const server = untrack(() => tab.server);
@@ -25,6 +26,8 @@
   let query = $state('');
   let macroMenu = $state(false);
   let attempt = $state(0);
+  let phase = $state<'connect' | 'auth' | 'shell'>('connect');
+  let attemptId = '';
   let lastSecret: string | undefined;
   let cancelReconnect = false;
 
@@ -43,6 +46,7 @@
   let search: SearchAddon;
   let ro: ResizeObserver;
   let unlisten: UnlistenFn | undefined;
+  let unlistenPhase: UnlistenFn | undefined;
   let disposed = false;
 
   const theme = {
@@ -95,6 +99,9 @@
     ro = new ResizeObserver(() => active && requestAnimationFrame(() => { try { fit.fit(); } catch {} }));
     ro.observe(host);
 
+    unlistenPhase = await listen<{ attempt: string; phase: 'auth' | 'shell' }>('ssh-phase', (e) => {
+      if (e.payload.attempt === attemptId) phase = e.payload.phase;
+    });
     unlisten = await listen<{ id: string; clean: boolean }>('ssh-closed', (e) => {
       if (e.payload.id === sessionId && !disposed) onClosed(e.payload.id, e.payload.clean);
     });
@@ -138,14 +145,16 @@
 
   async function connect(secret?: string, silent = false): Promise<boolean> {
     if (secret) lastSecret = secret;
+    attemptId = crypto.randomUUID();
     if (!silent) {
       status = 'connecting';
+      phase = 'connect';
       error = '';
     }
     const adhoc = tab.adhoc ? { ...server, username: askUser.trim() || server.username } : undefined;
     try {
       const r = await api.sshConnect(
-        { server_id: tab.adhoc ? undefined : server.id, adhoc, secret, cols: term.cols, rows: term.rows },
+        { server_id: tab.adhoc ? undefined : server.id, adhoc, secret, cols: term.cols, rows: term.rows, attempt: attemptId },
         (b) => term.write(b),
       );
       if (disposed) { api.sshClose(r.session_id); return false; }
@@ -174,6 +183,7 @@
     disposed = true;
     ro?.disconnect();
     unlisten?.();
+    unlistenPhase?.();
     if (sessionId) api.sshClose(sessionId).catch(() => {});
     term?.dispose();
   });
@@ -306,10 +316,9 @@
 
       {#if status === 'ask' || status === 'error' || status === 'connecting' || status === 'closed'}
         <div class="overlay">
-          <div class="panel">
+          <div class="panel" class:bare={status === 'connecting'}>
             {#if status === 'connecting'}
-              <div class="spinner"></div>
-              <p>{t('Connexion à {host}…', { host: server.host })}</p>
+              <ConnectLoader host={server.host} {phase} />
             {:else if status === 'ask'}
               <h3>{server.name}</h3>
               {#if tab.adhoc}
@@ -389,6 +398,7 @@
   .spinner.sm { width: 14px; height: 14px; }
   .overlay { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(13, 15, 20, 0.78); }
   .panel { width: 340px; display: flex; flex-direction: column; gap: 12px; padding: 22px; background: var(--surface); border: 1px solid var(--border-strong); border-radius: 12px; }
+  .panel.bare { width: auto; padding: 0; background: none; border: 0; }
   .panel h3 { font-size: 14px; }
   .err { display: flex; gap: 8px; color: var(--danger); line-height: 1.4; }
   .err :global(svg) { flex: none; margin-top: 1px; }
