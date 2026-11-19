@@ -58,15 +58,18 @@ button { cursor: pointer; }
 }
 .btn:hover { background: var(--surface-3); border-color: var(--border-strong); }
 .btn:disabled { opacity: 0.5; cursor: default; }
-/* Reflet rapide au survol : réservé aux boutons principaux (et aux cartes de serveur, voir Hosts). */
-.btn.primary { position: relative; overflow: hidden; isolation: isolate; }
-.btn.primary::after {
+/* Reflet rapide : boutons principaux et cartes de serveur. Déclenché par main.ts à l'entrée du pointeur ;
+   il va toujours au bout de son trajet, même si la souris sort en cours de route (pas de coupure nette). */
+.btn.primary, .card { position: relative; overflow: hidden; isolation: isolate; }
+.btn.primary::after, .card::after {
   content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
   background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, 0.55) 50%, transparent 65%);
   transform: translateX(-110%);
 }
-.btn.primary:not(:disabled):hover::after { transform: translateX(110%); transition: transform 0.38s ease-out; }
-@media (prefers-reduced-motion: reduce) { .btn.primary::after { display: none; } }
+.card::after { background: linear-gradient(105deg, transparent 38%, rgba(255, 255, 255, 0.07) 50%, transparent 62%); }
+.sweeping::after { animation: sweep 0.45s ease-out; }
+@keyframes sweep { from { transform: translateX(-110%); } to { transform: translateX(110%); } }
+@media (prefers-reduced-motion: reduce) { .sweeping::after { animation: none; } }
 .btn.primary { background: var(--grad); border-color: transparent; color: var(--accent-ink); font-weight: 600; }
 .btn.primary:hover { filter: brightness(1.06); }
 .btn.danger { color: var(--danger); }
