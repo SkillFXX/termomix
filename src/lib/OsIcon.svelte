@@ -16,12 +16,21 @@
   let { os, size = 20 }: { os: string | null | undefined; size?: number } = $props();
 
   let icon = $derived(os ? icons[os] : undefined);
-  // Les logos très sombres (Apple, AlmaLinux…) deviendraient invisibles sur fond sombre : couleur du texte à la place.
+  // Fond sur lequel l'icône est posée (carte / onglet) : on éclaircit la couleur de marque si le contraste est trop faible.
+  const BG = [24, 28, 42];
+  const lin = (c: number) => ((c /= 255) <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
+  const lum = (r: number, g: number, b: number) => 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+  const contrast = (c: number[]) => (lum(...(c as [number, number, number])) + 0.05) / (lum(BG[0], BG[1], BG[2]) + 0.05);
+
   let color = $derived.by(() => {
     if (!icon) return 'currentColor';
     const n = parseInt(icon.hex, 16);
-    const lum = (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255;
-    return lum < 0.28 ? 'var(--text)' : `#${icon.hex}`;
+    const base = [n >> 16, (n >> 8) & 255, n & 255];
+    for (let t = 0; t <= 1.001; t += 0.04) {
+      const c = base.map((v) => Math.round(v + (255 - v) * t));
+      if (contrast(c) >= 3.4) return `rgb(${c[0]} ${c[1]} ${c[2]})`;
+    }
+    return '#fff';
   });
 </script>
 
