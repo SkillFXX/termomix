@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Termomix — Client SSH moderne</title>
+  <meta name="description" content="Termomix est un client SSH moderne pour Linux et Windows : serveurs, terminal, SFTP, éditeur de fichiers et macros. Local, sans cloud." />
+  <meta property="og:title" content="Termomix — Client SSH moderne" />
+  <meta property="og:description" content="Serveurs, terminal, SFTP, éditeur et macros. Local, sans cloud." />
+  <meta property="og:image" content="logo.png" />
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <style>
+    @font-face { font-family: 'Sora'; src: url('fonts/sora-latin-wght-normal.woff2') format('woff2'); font-weight: 100 800; font-display: swap; }
+    @font-face { font-family: 'Inter'; src: url('fonts/inter-latin-wght-normal.woff2') format('woff2'); font-weight: 100 900; font-display: swap; }
+
+    :root {
+      --bg: #0b0d15; --surface: #11141f; --surface-2: #181c2a;
+      --border: #232846; --border-strong: #353c63;
+      --text: #e8eaf5; --muted: #8d95b5; --ink: #060d18;
+      --grad: linear-gradient(115deg, #45d2ff 0%, #7b97ff 50%, #b085ff 100%);
+      color-scheme: dark;
+    }
+    @supports (background: linear-gradient(in oklab, red, blue)) {
+      :root { --grad: linear-gradient(115deg in oklab, #45d2ff 0%, #7b97ff 50%, #b085ff 100%); }
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.6 'Inter', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+    h1, h2, h3 { font-family: 'Sora', 'Inter', sans-serif; margin: 0; letter-spacing: -0.01em; }
+    a { color: inherit; }
+    :focus-visible { outline: 2px solid #7b97ff; outline-offset: 3px; }
+
+    .wrap { width: min(1040px, 100% - 48px); margin-inline: auto; }
+
+    /* Héros */
+    .hero { text-align: center; padding: 72px 0 64px; }
+    .hero img { width: min(320px, 70vw); height: auto; display: block; margin: 0 auto 36px; }
+    .hero h1 { font-size: clamp(26px, 4.4vw, 40px); font-weight: 600; line-height: 1.2; }
+    .hero p { margin: 18px auto 0; max-width: 560px; color: var(--muted); font-size: 18px; }
+    .actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 34px; }
+    .note { margin-top: 16px; font-size: 14px; color: var(--muted); }
+
+    .btn { display: inline-flex; align-items: center; gap: 8px; height: 46px; padding: 0 22px; border-radius: 10px; font-weight: 600; text-decoration: none; border: 1px solid var(--border-strong); background: var(--surface-2); transition: border-color 0.15s, background 0.15s; }
+    .btn:hover { border-color: #4a537f; background: #1d2233; }
+    /* Même reflet que dans l'application : une couche de fond qui glisse, menée jusqu'au bout. */
+    .btn.primary {
+      color: var(--ink); border-color: transparent;
+      background-color: transparent;
+      background-image: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, 0.55) 50%, transparent 65%), var(--grad);
+      background-size: 300% 100%, 100% 100%;
+      background-repeat: no-repeat;
+      background-position: 0% 0, 0 0;
+    }
+    .btn.primary.sweeping { animation: sweep 0.45s ease-out; }
+    @keyframes sweep { from { background-position: 100% 0, 0 0; } to { background-position: 0% 0, 0 0; } }
+    .btn svg { flex: none; }
+
+    /* Fonctionnalités */
+    section { padding: 24px 0 72px; }
+    section > h2 { font-size: 22px; font-weight: 600; text-align: center; margin-bottom: 30px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 14px; }
+    .card { padding: 22px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; }
+    .card .ic { width: 38px; height: 38px; border-radius: 9px; display: grid; place-items: center; margin-bottom: 14px; color: var(--ink); background: var(--grad); }
+    .card h3 { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
+    .card p { margin: 0; color: var(--muted); font-size: 15px; }
+
+    footer { border-top: 1px solid var(--border); padding: 28px 0 40px; text-align: center; color: var(--muted); font-size: 14px; }
+    footer a { text-decoration: none; border-bottom: 1px solid var(--border-strong); }
+    footer a:hover { color: var(--text); }
+
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .btn.primary.sweeping { animation: none; } }
+  </style>
+</head>
+<body>
+  <main>
+    <header class="hero wrap">
+      <img src="logo.png" alt="Termomix" width="320" height="218" />
+      <h1>Le client SSH moderne, local et sans cloud.</h1>
+      <p>Gérez vos serveurs, ouvrez un terminal rapide, parcourez et modifiez vos fichiers distants, et automatisez vos commandes. Vos données restent sur votre machine.</p>
+      <div class="actions">
+        <a class="btn primary" id="download" href="https://github.com/SkillFXX/termomix/releases/latest">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></svg>
+          Télécharger
+        </a>
+        <a class="btn" href="https://github.com/SkillFXX/termomix">Voir sur GitHub</a>
+      </div>
+      <p class="note">Disponible pour Linux (AppImage, .deb, .rpm) et Windows (installeur, .msi, exécutable portable).</p>
+    </header>
+
+    <section class="wrap" aria-labelledby="features">
+      <h2 id="features">Ce que fait Termomix</h2>
+      <div class="grid">
+        <article class="card">
+          <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v6H4zM4 13h16v6H4zM8 8h.01M8 16h.01"/></svg></div>
+          <h3>Serveurs et groupes</h3>
+          <p>Organisez vos serveurs en groupes, avec mot de passe ou clé privée. Le système de chaque serveur est reconnu et affiché avec son logo.</p>
+        </article>
+        <article class="card">
+          <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v14H4zM8 10l3 2-3 2M13 15h4"/></svg></div>
+          <h3>Terminal rapide</h3>
+          <p>Connexion en un clic ou en saisissant <code>user@hôte</code>, onglets, recherche, et reconnexion automatique après une coupure réseau.</p>
+        </article>
+        <article class="card">
+          <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></div>
+          <h3>Fichiers et éditeur</h3>
+          <p>Explorateur SFTP avec glisser-déposer, transferts de dossiers, et éditeur intégré avec coloration syntaxique pour modifier un fichier distant.</p>
+        </article>
+        <article class="card">
+          <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 3L5 14h6l-1 7 8-11h-6z"/></svg></div>
+          <h3>Macros</h3>
+          <p>Enregistrez les commandes que vous tapez, puis relancez-les en un clic sur un ou plusieurs serveurs.</p>
+        </article>
+        <article class="card">
+          <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v4H4zM6 9v10h12V9M10 13h4"/></svg></div>
+          <h3>Export sans cloud</h3>
+          <p>Un fichier unique, chiffré avec une phrase secrète, pour tout retrouver sur un autre ordinateur. Aucun compte, aucun serveur tiers.</p>
+        </article>
+        <article class="card">
+          <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></svg></div>
+          <h3>Léger et en français</h3>
+          <p>Construit avec Tauri et Rust : démarrage rapide, faible consommation. Interface en français ou en anglais.</p>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">Termomix · <a href="https://github.com/SkillFXX/termomix/releases/latest">Télécharger</a> · <a href="https://github.com/SkillFXX/termomix">GitHub</a></div>
+  </footer>
+
+  <script>
+    // Reflet du bouton principal : lancé à l'entrée du pointeur et mené à son terme.
+    const b = document.getElementById('download');
+    b.addEventListener('pointerenter', () => {
+      if (b.classList.contains('sweeping')) return;
+      b.classList.add('sweeping');
+      b.addEventListener('animationend', () => b.classList.remove('sweeping'), { once: true });
+    });
+  </script>
+</body>
+</html>
