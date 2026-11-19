@@ -73,7 +73,7 @@
             <!-- svelte-ignore a11y_click_events_have_key_events, a11y_interactive_supports_focus -->
             <div class="tab" class:on={app.active === tb.id} role="tab" aria-selected={app.active === tb.id}
               onclick={() => (app.active = tb.id)} onauxclick={(e) => e.button === 1 && requestClose(tb.id)}>
-              {#if app.servers.find((x) => x.id === tb.server.id)?.os}<OsIcon os={app.servers.find((x) => x.id === tb.server.id)?.os} size={14} />{:else}<Icon name="terminal" size={14} />{/if}
+              {#if app.servers.find((x) => x.id === tb.server.id)?.os}<OsIcon os={app.servers.find((x) => x.id === tb.server.id)?.os} size={18} />{:else}<Icon name="terminal" size={14} />{/if}
               <span class="tt">{tb.title}</span>
               <button class="x" aria-label={t("Fermer l'onglet")} onclick={(e) => { e.stopPropagation(); requestClose(tb.id); }}><Icon name="x" size={12} /></button>
             </div>

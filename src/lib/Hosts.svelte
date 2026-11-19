@@ -156,7 +156,7 @@
 {#snippet card(s: Server, actions: boolean)}
   <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
   <div class="card" onclick={() => openTab(s)} ondblclick={(e) => e.preventDefault()}>
-    <div class="avatar" title={s.os_name ?? ""}>{#if s.os}<OsIcon os={s.os} size={20} />{:else}{s.name.slice(0, 1).toUpperCase()}{/if}</div>
+    {#if s.os}<OsIcon os={s.os} size={36} title={s.os_name ?? ""} />{:else}<div class="avatar">{s.name.slice(0, 1).toUpperCase()}</div>{/if}
     <div class="info">
       <div class="name">{s.name}</div>
       <div class="addr mono">{s.username}@{s.host}{s.port !== 22 ? `:${s.port}` : ''}</div>

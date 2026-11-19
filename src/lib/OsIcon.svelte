@@ -13,27 +13,30 @@
     freebsd: siFreebsd, apple: siApple, openwrt: siOpenwrt, zorin: siZorin, elementary: siElementary, linux: siLinux,
   };
 
-  let { os, size = 20 }: { os: string | null | undefined; size?: number } = $props();
+  let { os, size = 36, title }: { os: string | null | undefined; size?: number; title?: string } = $props();
 
   let icon = $derived(os ? icons[os] : undefined);
-  // Fond sur lequel l'icône est posée (carte / onglet) : on éclaircit la couleur de marque si le contraste est trop faible.
-  const BG = [24, 28, 42];
-  const lin = (c: number) => ((c /= 255) <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
-  const lum = (r: number, g: number, b: number) => 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
-  const contrast = (c: number[]) => (lum(...(c as [number, number, number])) + 0.05) / (lum(BG[0], BG[1], BG[2]) + 0.05);
 
-  let color = $derived.by(() => {
-    if (!icon) return 'currentColor';
+  const lin = (c: number) => ((c /= 255) <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
+  const lum = (n: number) => 0.2126 * lin(n >> 16) + 0.7152 * lin((n >> 8) & 255) + 0.0722 * lin(n & 255);
+
+  // Pastille aux couleurs de la marque, logo blanc (ou sombre si la marque est claire, comme Linux en jaune).
+  // Les marques quasi noires (Apple, AlmaLinux…) passent en pastille claire, illisibles sinon sur le thème sombre.
+  let look = $derived.by(() => {
+    if (!icon) return { bg: 'transparent', fg: 'currentColor' };
     const n = parseInt(icon.hex, 16);
-    const base = [n >> 16, (n >> 8) & 255, n & 255];
-    for (let t = 0; t <= 1.001; t += 0.04) {
-      const c = base.map((v) => Math.round(v + (255 - v) * t));
-      if (contrast(c) >= 3.4) return `rgb(${c[0]} ${c[1]} ${c[2]})`;
-    }
-    return '#fff';
+    const l = lum(n);
+    if (l < 0.05) return { bg: '#e8eaf5', fg: '#14161f' };
+    return { bg: `#${icon.hex}`, fg: 1.05 / (l + 0.05) >= 2.2 ? '#ffffff' : '#14161f' };
   });
 </script>
 
 {#if icon}
-  <svg width={size} height={size} viewBox="0 0 24 24" fill={color} aria-hidden="true"><path d={icon.path} /></svg>
+  <span class="tile" style:width="{size}px" style:height="{size}px" style:background={look.bg} style:border-radius="{Math.round(size * 0.24)}px" {title}>
+    <svg width={size * 0.62} height={size * 0.62} viewBox="0 0 24 24" fill={look.fg} aria-hidden="true"><path d={icon.path} /></svg>
+  </span>
 {/if}
+
+<style>
+  .tile { display: inline-grid; place-items: center; flex: none; }
+</style>
