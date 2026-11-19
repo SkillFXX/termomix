@@ -213,7 +213,7 @@
   .count { font-size: 11px; color: var(--faint); }
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 10px; }
   .card { position: relative; display: flex; gap: 12px; align-items: center; padding: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; cursor: pointer; transition: border-color 0.12s, background 0.12s; }
-  .card:hover { background: var(--surface-2); border-color: #4a537f; box-shadow: 0 0 24px rgba(110, 120, 250, 0.12); }
+  .card:hover { background: var(--surface-2); border-color: #4a537f; }
   .avatar { flex: none; width: 36px; height: 36px; border-radius: 8px; background: linear-gradient(var(--surface-2), var(--surface-2)) padding-box, var(--grad) border-box; border: 1px solid transparent; display: grid; place-items: center; font-family: var(--brand); font-weight: 650; color: var(--text); }
   .info { min-width: 0; flex: 1; }
   .name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

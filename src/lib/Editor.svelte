@@ -166,7 +166,7 @@
 
 <style>
   .overlay { position: fixed; inset: 0; z-index: 60; background: rgba(5, 6, 9, 0.7); display: grid; place-items: center; }
-  .editor { width: min(1100px, calc(100vw - 48px)); height: calc(100vh - 56px); display: flex; flex-direction: column; background: var(--bg); border: 1px solid var(--border-strong); border-radius: 12px; overflow: hidden; box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55), 0 0 40px rgba(110, 120, 250, 0.08); }
+  .editor { width: min(1100px, calc(100vw - 48px)); height: calc(100vh - 56px); display: flex; flex-direction: column; background: var(--bg); border: 1px solid var(--border-strong); border-radius: 12px; overflow: hidden; box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55); }
   header { display: flex; align-items: center; gap: 8px; padding: 8px 10px 8px 14px; background: var(--surface); border-bottom: 1px solid var(--border); color: var(--muted); }
   .title { color: var(--text); font-weight: 600; }
   .path { font-size: 11.5px; color: var(--faint); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }

@@ -21,7 +21,7 @@
 
 <style>
   .overlay { position: fixed; inset: 0; background: rgba(5, 6, 9, 0.62); display: flex; align-items: center; justify-content: center; z-index: 50; }
-  .modal { max-width: calc(100vw - 48px); max-height: calc(100vh - 48px); display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--border-strong); border-radius: 12px; box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55), 0 0 40px rgba(110, 120, 250, 0.08); }
+  .modal { max-width: calc(100vw - 48px); max-height: calc(100vh - 48px); display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--border-strong); border-radius: 12px; box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55); }
   header { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px 12px 20px; border-bottom: 1px solid var(--border); }
   h2 { font-size: 14px; font-weight: 600; font-family: var(--brand); }
   .body { padding: 18px 20px; overflow: auto; display: flex; flex-direction: column; gap: 14px; }

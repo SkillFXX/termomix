@@ -14,7 +14,6 @@
   --violet: #9a74f5;
   --magenta: #d65cf0;
   --grad: linear-gradient(120deg, #4fd3ff 0%, #7f8cf8 50%, #b46cf5 100%);
-  --glow: 0 0 0 1px rgba(127, 140, 248, 0.35), 0 0 22px rgba(110, 120, 250, 0.28);
   --danger: #f2667f;
   --success: #46d39a;
   --warn: #f0b95a;
@@ -28,11 +27,7 @@
 * { box-sizing: border-box; }
 html, body, #app { height: 100%; margin: 0; }
 body {
-  background:
-    radial-gradient(900px 500px at 8% -10%, rgba(79, 211, 255, 0.07), transparent 60%),
-    radial-gradient(900px 600px at 100% 0%, rgba(154, 116, 245, 0.08), transparent 60%),
-    var(--bg);
-  background-attachment: fixed;
+  background: var(--bg);
   color: var(--text);
   font: 13px/1.45 var(--font);
   -webkit-font-smoothing: antialiased;
@@ -63,8 +58,18 @@ button { cursor: pointer; }
 }
 .btn:hover { background: var(--surface-3); border-color: var(--border-strong); }
 .btn:disabled { opacity: 0.5; cursor: default; }
+/* Reflet qui traverse le bouton au survol (rapide, sans halo). */
+.btn:not(.ghost) { position: relative; overflow: hidden; isolation: isolate; }
+.btn:not(.ghost)::after {
+  content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, 0.10) 50%, transparent 65%);
+  transform: translateX(-110%);
+}
+.btn.primary::after { background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, 0.55) 50%, transparent 65%); }
+.btn:not(.ghost):not(:disabled):hover::after { transform: translateX(110%); transition: transform 0.38s ease-out; }
+@media (prefers-reduced-motion: reduce) { .btn:not(.ghost)::after { display: none; } }
 .btn.primary { background: var(--grad); border-color: transparent; color: var(--accent-ink); font-weight: 600; }
-.btn.primary:hover { filter: brightness(1.08); box-shadow: var(--glow); }
+.btn.primary:hover { filter: brightness(1.06); }
 .btn.danger { color: var(--danger); }
 .btn.ghost { background: transparent; border-color: transparent; color: var(--muted); }
 .btn.ghost:hover { background: var(--surface-2); color: var(--text); }
@@ -77,7 +82,7 @@ button { cursor: pointer; }
   background: var(--bg); border: 1px solid var(--border);
   border-radius: var(--radius);
 }
-.input:focus { outline: none; border-color: #7f8cf8; box-shadow: 0 0 0 3px rgba(127, 140, 248, 0.18); }
+.input:focus { outline: none; border-color: #7f8cf8; }
 textarea.input { height: auto; padding: 8px 10px; resize: vertical; font-family: var(--mono); font-size: 12.5px; }
 select.input { appearance: none; padding-right: 24px; background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%); background-position: calc(100% - 14px) 14px, calc(100% - 10px) 14px; background-size: 4px 4px; background-repeat: no-repeat; }
 
