@@ -17,20 +17,20 @@
 
   let splash = $state(true);
 
+  let animDone = $state(false);
+  let failed = $state(false);
+
   onMount(() => {
-    const t0 = performance.now();
     api.getState()
-      .then(async (s) => {
-        apply(s);
-        app.ready = true;
-        // Une boucle complète de l'animation (30 images x 100 ms).
-        const rest = 3000 - (performance.now() - t0);
-        if (app.settings.splash && rest > 0) await new Promise((r) => setTimeout(r, rest));
-      })
-      .catch((e) => toast(errMsg(e), 'error'))
-      .finally(() => (splash = false));
+      .then((s) => { apply(s); app.ready = true; })
+      .catch((e) => { toast(errMsg(e), 'error'); failed = true; });
     const un = listen<Progress>('transfer', (e) => updateTransfer(e.payload));
     return () => { un.then((f) => f()); };
+  });
+
+  // L'écran de chargement part dès que les données sont prêtes ET que l'animation est terminée.
+  $effect(() => {
+    if (failed || (app.ready && (animDone || !app.settings.splash))) splash = false;
   });
 
   async function requestClose(id: string) {
@@ -53,10 +53,10 @@
 
 <svelte:window onkeydown={onKey} onkeydowncapture={(e) => e.key === 'F5' && e.preventDefault()} />
 
-{#if splash}<Splash />{/if}
+{#if splash}<Splash onfinished={() => (animDone = true)} />{/if}
 
 {#if app.ready}
-  <div class="shell">
+  <div class="shell" class:enter={!splash}>
     <Sidebar />
     <div class="content">
       {#if app.tabs.length}
@@ -90,7 +90,8 @@
 <Toasts />
 
 <style>
-  .shell { height: 100%; display: flex; }
+  .shell { height: 100%; display: flex; opacity: 0; transform: translateY(18px); }
+  .shell.enter { opacity: 1; transform: none; transition: opacity 0.6s cubic-bezier(0.22, 0.8, 0.2, 1), transform 0.6s cubic-bezier(0.22, 0.8, 0.2, 1); }
   .content { flex: 1; min-width: 0; display: flex; flex-direction: column; }
   .tabs { flex: none; display: flex; gap: 2px; padding: 6px 8px 0; background: var(--bg); border-bottom: 1px solid var(--border); overflow-x: auto; }
   .tab { display: flex; align-items: center; gap: 8px; max-width: 220px; height: 32px; padding: 0 8px 0 12px; border-radius: 8px 8px 0 0; color: var(--muted); cursor: default; border: 1px solid transparent; border-bottom: 0; }
