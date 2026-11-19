@@ -44,7 +44,6 @@ input, textarea, select, button { font: inherit; color: inherit; }
 input, textarea { user-select: text; }
 h1, h2, h3, p { margin: 0; }
 h1, h2 { font-family: var(--brand); }
-.grad-text { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
 button { cursor: pointer; }
 ::selection { background: rgba(127, 140, 248, 0.35); }
 
