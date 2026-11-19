@@ -19,6 +19,7 @@
 
   let animDone = $state(false);
   let failed = $state(false);
+  let leaving = $state(false);
 
   onMount(() => {
     api.getState()
@@ -30,7 +31,11 @@
 
   // L'écran de chargement part dès que les données sont prêtes ET que l'animation est terminée.
   $effect(() => {
-    if (failed || (app.ready && (animDone || !app.settings.splash))) splash = false;
+    if (!leaving && (failed || (app.ready && (animDone || !app.settings.splash)))) {
+      leaving = true;
+      // Retrait du DOM une fois le fondu terminé (il est déjà invisible à ce moment).
+      setTimeout(() => (splash = false), 900);
+    }
   });
 
   async function requestClose(id: string) {
@@ -53,10 +58,10 @@
 
 <svelte:window onkeydown={onKey} onkeydowncapture={(e) => e.key === 'F5' && e.preventDefault()} />
 
-{#if splash}<Splash onfinished={() => (animDone = true)} />{/if}
+{#if splash}<Splash {leaving} onfinished={() => (animDone = true)} />{/if}
 
 {#if app.ready}
-  <div class="shell" class:enter={!splash}>
+  <div class="shell" class:enter={leaving || !splash}>
     <Sidebar />
     <div class="content">
       {#if app.tabs.length}

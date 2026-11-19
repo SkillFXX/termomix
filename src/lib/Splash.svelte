@@ -1,9 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { cubicInOut } from 'svelte/easing';
-  import { fade } from 'svelte/transition';
 
-  let { onfinished }: { onfinished: () => void } = $props();
+  let { onfinished, leaving = false }: { onfinished: () => void; leaving?: boolean } = $props();
 
   // L'animation (30 images x 100 ms) se joue une seule fois puis reste sur sa dernière image :
   // le fondu de sortie démarre donc exactement à la fin, sans reprise de boucle.
@@ -21,19 +19,14 @@
     return () => clearTimeout(safety);
   });
 
-  // Le logo glisse légèrement vers le haut en s'estompant.
-  function lift(_node: Element) {
-    return { duration: 600, easing: cubicInOut, css: (t: number, u: number) => `opacity: ${t}; transform: translateY(${-u * 22}px) scale(${1 + u * 0.04})` };
-  }
 </script>
 
-<div class="splash" role="status" aria-label="Chargement" out:fade={{ duration: 600 }}>
+<div class="splash" class:leaving role="status" aria-label="Chargement">
   <img
     src="/loader.webp"
     alt="Termomix"
     width="393"
     height="283"
-    out:lift
     onload={() => setTimeout(finish, DURATION)}
     onerror={finish}
   />
@@ -41,5 +34,8 @@
 
 <style>
   .splash { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; background: var(--bg); }
+  /* Sortie pilotée en CSS : l'élément reste invisible (et non remis à zéro) jusqu'à son retrait. */
+  .splash.leaving { opacity: 0; visibility: hidden; pointer-events: none; transition: opacity 0.6s ease-in-out, visibility 0s 0.6s; }
   img { max-width: 60vw; height: auto; user-select: none; -webkit-user-drag: none; }
+  .leaving img { opacity: 0; transform: translateY(-22px) scale(1.04); transition: opacity 0.6s ease-in-out, transform 0.6s ease-in-out; }
 </style>
