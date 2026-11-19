@@ -26,10 +26,10 @@ export function installMock() {
       return {
         groups: [{ id: 'g1', name: 'Production' }, { id: 'g2', name: 'Maison' }],
         servers: [
-          srv('1', 'web-01', '51.15.20.11', 'g1', true, now - 300),
-          srv('2', 'db-01', '51.15.20.12', 'g1', true, now - 86400),
-          srv('3', 'NAS', '192.168.1.20', 'g2', false, now - 7200),
-          srv('4', 'Raspberry Pi', '192.168.1.42', 'g2'),
+          { ...srv('1', 'web-01', '51.15.20.11', 'g1', true, now - 300), os: 'debian', os_name: 'Debian GNU/Linux 12 (bookworm)' },
+          { ...srv('2', 'db-01', '51.15.20.12', 'g1', true, now - 86400), os: 'ubuntu', os_name: 'Ubuntu 24.04 LTS' },
+          { ...srv('3', 'NAS', '192.168.1.20', 'g2', false, now - 7200), os: 'linux', os_name: 'Linux' },
+          { ...srv('4', 'Raspberry Pi', '192.168.1.42', 'g2'), os: 'raspberrypi', os_name: 'Raspberry Pi OS' },
           srv('5', 'vps-test', 'test.exemple.fr', null),
         ],
         macros: [{ id: 'm1', name: 'Mise à jour', description: 'apt', commands: ['sudo apt update', 'sudo apt upgrade -y'], delay_ms: 150, server_ids: [] }],

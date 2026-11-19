@@ -39,6 +39,11 @@ pub struct Server {
     pub notes: Option<String>,
     #[serde(default)]
     pub last_connected: Option<u64>,
+    /// Système détecté à la connexion (clé d'icône : debian, ubuntu, arch…).
+    #[serde(default)]
+    pub os: Option<String>,
+    #[serde(default)]
+    pub os_name: Option<String>,
 }
 
 fn default_port() -> u16 {

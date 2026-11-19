@@ -174,3 +174,101 @@ pub async fn start_shell(
     });
     Ok(session)
 }
+
+/// Détecte le système du serveur via /etc/os-release (canal exec séparé du shell).
+/// Retourne (clé d'icône, nom lisible).
+pub async fn detect_os(handle: &Handle<Client>) -> Option<(String, String)> {
+    let chan = handle.channel_open_session().await.ok()?;
+    chan.exec(
+        true,
+        "sh -c 'cat /etc/os-release 2>/dev/null || cat /usr/lib/os-release 2>/dev/null; echo UNAME=$(uname -s 2>/dev/null)'",
+    )
+    .await
+    .ok()?;
+    let mut chan = chan;
+    let mut out = Vec::new();
+    let _ = tokio::time::timeout(Duration::from_secs(6), async {
+        while let Some(msg) = chan.wait().await {
+            match msg {
+                ChannelMsg::Data { data } => out.extend_from_slice(&data),
+                ChannelMsg::Eof | ChannelMsg::Close => break,
+                _ => {}
+            }
+        }
+    })
+    .await;
+    let _ = chan.close().await;
+    parse_os(&String::from_utf8_lossy(&out))
+}
+
+const KNOWN: &[&str] = &[
+    "debian", "ubuntu", "fedora", "arch", "centos", "rhel", "alpine", "opensuse", "linuxmint", "raspberrypi", "rocky",
+    "alma", "kali", "manjaro", "gentoo", "nixos", "popos", "freebsd", "apple", "openwrt", "zorin", "elementary",
+];
+
+fn normalize(id: &str) -> Option<&'static str> {
+    let id = id.trim().to_lowercase();
+    let k = match id.as_str() {
+        "arch" | "archlinux" | "endeavouros" | "garuda" | "artix" => "arch",
+        "rhel" | "redhat" => "rhel",
+        "rocky" => "rocky",
+        "almalinux" | "alma" => "alma",
+        "linuxmint" | "mint" => "linuxmint",
+        "raspbian" => "raspberrypi",
+        "pop" | "pop_os" => "popos",
+        "kali" => "kali",
+        "alpine" => "alpine",
+        "nixos" => "nixos",
+        "openwrt" => "openwrt",
+        s if s.starts_with("opensuse") || s == "sles" || s == "suse" => "opensuse",
+        s => return KNOWN.iter().copied().find(|k| *k == s),
+    };
+    Some(k)
+}
+
+pub fn parse_os(text: &str) -> Option<(String, String)> {
+    let mut id = None;
+    let mut like = Vec::new();
+    let mut pretty = None;
+    let mut uname = None;
+    for line in text.lines() {
+        let Some((k, v)) = line.split_once('=') else { continue };
+        let v = v.trim().trim_matches('"').trim_matches('\'');
+        match k.trim() {
+            "ID" => id = Some(v.to_string()),
+            "ID_LIKE" => like = v.split_whitespace().map(String::from).collect(),
+            "PRETTY_NAME" => pretty = Some(v.to_string()),
+            "UNAME" => uname = Some(v.to_string()),
+            _ => {}
+        }
+    }
+    let key = id
+        .as_deref()
+        .and_then(normalize)
+        .or_else(|| like.iter().find_map(|l| normalize(l)))
+        .or_else(|| match uname.as_deref() {
+            Some("Darwin") => Some("apple"),
+            Some("FreeBSD") => Some("freebsd"),
+            _ => None,
+        })
+        .or_else(|| (id.is_some() || uname.as_deref() == Some("Linux")).then_some("linux"))?;
+    let name = pretty.or(id).or(uname).unwrap_or_else(|| key.to_string());
+    Some((key.to_string(), name))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::parse_os;
+    #[test]
+    fn detects_distros() {
+        let deb = "PRETTY_NAME=\"Debian GNU/Linux 12 (bookworm)\"\nID=debian\nUNAME=Linux\n";
+        assert_eq!(parse_os(deb).unwrap().0, "debian");
+        let mint = "NAME=\"Linux Mint\"\nID=linuxmint\nID_LIKE=\"ubuntu debian\"\nUNAME=Linux";
+        assert_eq!(parse_os(mint).unwrap().0, "linuxmint");
+        let derived = "ID=weirdos\nID_LIKE=\"rhel centos fedora\"\nUNAME=Linux";
+        assert_eq!(parse_os(derived).unwrap().0, "rhel");
+        assert_eq!(parse_os("UNAME=Darwin\n").unwrap().0, "apple");
+        assert_eq!(parse_os("ID=unknownos\nUNAME=Linux").unwrap().0, "linux");
+        assert!(parse_os("").is_none());
+    }
+}

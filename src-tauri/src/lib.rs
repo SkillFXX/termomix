@@ -210,8 +210,29 @@ async fn ssh_connect(
 
     let id = new_id();
     let startup = server.startup_command.clone();
+    let app2 = app.clone();
     let session = ssh::start_shell(app, id.clone(), info.handle, req.cols, req.rows, startup, on_data).await?;
-    sessions.0.lock().unwrap().insert(id.clone(), session);
+    sessions.0.lock().unwrap().insert(id.clone(), session.clone());
+
+    // Détection du système en arrière-plan (ne retarde pas l'ouverture du terminal).
+    if let Some(sid) = req.server_id.clone() {
+        tokio::spawn(async move {
+            let Some((os, name)) = ssh::detect_os(&session.handle).await else { return };
+            let store = app2.state::<Store>();
+            let changed = store
+                .update(|db| {
+                    let Some(s) = db.servers.iter_mut().find(|s| s.id == sid) else { return false };
+                    let changed = s.os.as_deref() != Some(&os) || s.os_name.as_deref() != Some(&name);
+                    s.os = Some(os);
+                    s.os_name = Some(name);
+                    changed
+                })
+                .unwrap_or(false);
+            if changed {
+                let _ = tauri::Emitter::emit(&app2, "servers-changed", ());
+            }
+        });
+    }
 
     let _ = store.update(|db| {
         if info.new_host {

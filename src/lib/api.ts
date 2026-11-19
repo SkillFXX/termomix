@@ -20,6 +20,9 @@ export interface Server {
   startup_command: string | null;
   notes: string | null;
   last_connected: number | null;
+  /** Système détecté à la connexion (clé d'icône). */
+  os?: string | null;
+  os_name?: string | null;
 }
 
 export interface Group {

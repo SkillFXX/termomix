@@ -2,7 +2,7 @@
   import { onMount } from 'svelte';
   import { listen } from '@tauri-apps/api/event';
   import { api, errMsg, type Progress } from './lib/api';
-  import { app, apply, closeTab, confirmDlg, macroEditor, toast, updateTransfer } from './lib/state.svelte';
+  import { app, apply, closeTab, reload, confirmDlg, macroEditor, toast, updateTransfer } from './lib/state.svelte';
   import { t } from './lib/i18n.svelte';
   import Sidebar from './lib/Sidebar.svelte';
   import Hosts from './lib/Hosts.svelte';
@@ -14,6 +14,7 @@
   import Toasts from './lib/Toasts.svelte';
   import Splash from './lib/Splash.svelte';
   import Icon from './lib/Icon.svelte';
+  import OsIcon from './lib/OsIcon.svelte';
 
   let splash = $state(true);
 
@@ -26,7 +27,9 @@
       .then((s) => { apply(s); app.ready = true; })
       .catch((e) => { toast(errMsg(e), 'error'); failed = true; });
     const un = listen<Progress>('transfer', (e) => updateTransfer(e.payload));
-    return () => { un.then((f) => f()); };
+    // Le système d'un serveur vient d'être détecté : on rafraîchit les cartes et les onglets.
+    const un2 = listen('servers-changed', () => reload());
+    return () => { un.then((f) => f()); un2.then((f) => f()); };
   });
 
   // L'écran de chargement part dès que les données sont prêtes ET que l'animation est terminée.
@@ -70,7 +73,7 @@
             <!-- svelte-ignore a11y_click_events_have_key_events, a11y_interactive_supports_focus -->
             <div class="tab" class:on={app.active === tb.id} role="tab" aria-selected={app.active === tb.id}
               onclick={() => (app.active = tb.id)} onauxclick={(e) => e.button === 1 && requestClose(tb.id)}>
-              <Icon name="terminal" size={14} />
+              {#if app.servers.find((x) => x.id === tb.server.id)?.os}<OsIcon os={app.servers.find((x) => x.id === tb.server.id)?.os} size={14} />{:else}<Icon name="terminal" size={14} />{/if}
               <span class="tt">{tb.title}</span>
               <button class="x" aria-label={t("Fermer l'onglet")} onclick={(e) => { e.stopPropagation(); requestClose(tb.id); }}><Icon name="x" size={12} /></button>
             </div>
