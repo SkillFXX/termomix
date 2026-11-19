@@ -1,6 +1,7 @@
 <script lang="ts">
   import { dlg } from './state.svelte';
   import Modal from './Modal.svelte';
+  import { t } from './i18n.svelte';
 
   let value = $state('');
   $effect(() => { if (dlg.current?.kind === 'prompt') value = dlg.current.value ?? ''; });
@@ -21,11 +22,11 @@
       <input class="input" bind:value autofocus onkeydown={(e) => e.key === 'Enter' && value.trim() && done(value.trim())} />
     {/if}
     {#snippet footer()}
-      <button class="btn" onclick={() => done(c.kind === 'confirm' ? false : null)}>Annuler</button>
+      <button class="btn" onclick={() => done(c.kind === 'confirm' ? false : null)}>{t('Annuler')}</button>
       {#if c.kind === 'confirm'}
-        <button class="btn" class:primary={!c.danger} class:danger={c.danger} onclick={() => done(true)}>Confirmer</button>
+        <button class="btn" class:primary={!c.danger} class:danger={c.danger} onclick={() => done(true)}>{t('Confirmer')}</button>
       {:else}
-        <button class="btn primary" disabled={!value.trim()} onclick={() => done(value.trim())}>Valider</button>
+        <button class="btn primary" disabled={!value.trim()} onclick={() => done(value.trim())}>{t('Valider')}</button>
       {/if}
     {/snippet}
   </Modal>

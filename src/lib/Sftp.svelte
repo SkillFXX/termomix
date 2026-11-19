@@ -3,8 +3,10 @@
   import { open } from '@tauri-apps/plugin-dialog';
   import { getCurrentWebview } from '@tauri-apps/api/webview';
   import { api, errMsg, type Entry } from './api';
-  import { attempt, confirmDlg, promptDlg, toast } from './state.svelte';
+  import { app, attempt, confirmDlg, promptDlg, toast } from './state.svelte';
+  import { t } from './i18n.svelte';
   import Icon from './Icon.svelte';
+  import Editor from './Editor.svelte';
 
   let { sessionId, active }: { sessionId: string; active: boolean } = $props();
 
@@ -14,6 +16,7 @@
   let selected = $state<Set<string>>(new Set());
   let pathInput = $state('');
   let hover = $state(false);
+  let editing = $state<string | null>(null);
   let unlisten: (() => void) | undefined;
 
   let sorted = $derived(
@@ -63,40 +66,40 @@
   }
 
   async function pickUpload() {
-    const r = await open({ multiple: true, title: 'Envoyer des fichiers' });
+    const r = await open({ multiple: true, title: t('Envoyer des fichiers') });
     if (r) await uploadPaths(Array.isArray(r) ? r : [r]);
   }
 
   async function pickUploadDir() {
-    const r = await open({ directory: true, title: 'Envoyer un dossier' });
+    const r = await open({ directory: true, title: t('Envoyer un dossier') });
     if (typeof r === 'string') await uploadPaths([r]);
   }
 
   async function downloadSel() {
     const items = sorted.filter((e) => selected.has(e.name));
-    if (!items.length) return toast('Sélectionnez un fichier', 'info');
-    const dir = await open({ directory: true, title: 'Télécharger vers…' });
+    if (!items.length) return toast(t('Sélectionnez un fichier'), 'info');
+    const dir = await open({ directory: true, title: t('Télécharger vers…') });
     if (typeof dir !== 'string') return;
     for (const e of items) await attempt(() => api.sftpDownload(sessionId, join(path, e.name), e.is_dir, dir));
   }
 
   async function mkdir() {
-    const n = await promptDlg('Nouveau dossier', 'Nom du dossier');
+    const n = await promptDlg(t('Nouveau dossier'), t('Nom du dossier'));
     if (n && (await attempt(() => api.sftpMkdir(sessionId, join(path, n))) !== undefined)) load(path);
   }
 
   async function rename() {
     const [name] = [...selected];
     if (selected.size !== 1) return;
-    const n = await promptDlg('Renommer', '', name);
+    const n = await promptDlg(t('Renommer'), '', name);
     if (n && n !== name && (await attempt(() => api.sftpRename(sessionId, join(path, name), join(path, n)))) !== undefined) load(path);
   }
 
   async function remove() {
     const items = sorted.filter((e) => selected.has(e.name));
     if (!items.length) return;
-    const msg = items.length === 1 ? `« ${items[0].name} »` : `${items.length} éléments`;
-    if (!(await confirmDlg(`Supprimer ${msg} ?`, items.some((i) => i.is_dir) ? 'Les dossiers sont supprimés avec tout leur contenu. Action définitive.' : 'Action définitive.'))) return;
+    const msg = items.length === 1 ? `« ${items[0].name} »` : t('{n} éléments', { n: items.length });
+    if (!(await confirmDlg(t('Supprimer {msg} ?', { msg }), items.some((i) => i.is_dir) ? t('Les dossiers sont supprimés avec tout leur contenu. Action définitive.') : t('Action définitive.')))) return;
     for (const e of items) await attempt(() => api.sftpRemove(sessionId, join(path, e.name), e.is_dir));
     load(path);
   }
@@ -108,33 +111,44 @@
     selected = s;
   }
 
-  const open2 = (en: Entry) => en.is_dir && load(join(path, en.name));
+  function open2(en: Entry) {
+    if (en.is_dir) return load(join(path, en.name));
+    edit(en);
+  }
+
+  function edit(en: Entry) {
+    if (en.size > 5 * 1024 * 1024) return toast(t('Fichier trop volumineux pour l\'édition en ligne (5 Mo maximum). Téléchargez-le plutôt.'), 'info');
+    editing = join(path, en.name);
+  }
+
+  const selectedFile = $derived(selected.size === 1 ? sorted.find((e) => selected.has(e.name) && !e.is_dir) : undefined);
   const up = () => load(path.replace(/\/[^/]*\/?$/, '') || '/');
 
   function size(n: number) {
-    if (n < 1024) return `${n} o`;
-    const u = ['Ko', 'Mo', 'Go', 'To'];
+    if (n < 1024) return `${n} ${t('o')}`;
+    const u = [t('Ko'), t('Mo'), t('Go'), t('To')];
     let i = -1;
     do { n /= 1024; i++; } while (n >= 1024 && i < 3);
     return `${n.toFixed(n < 10 ? 1 : 0)} ${u[i]}`;
   }
-  const date = (t: number | null) => (t ? new Date(t * 1000).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: '2-digit' }) : '');
+  const date = (ts: number | null) => (ts ? new Date(ts * 1000).toLocaleDateString(app.settings.language === 'en' ? 'en-GB' : 'fr-FR', { day: '2-digit', month: 'short', year: '2-digit' }) : '');
 </script>
 
 <div class="sftp" class:hover>
   <div class="bar">
-    <button class="btn ghost sm icon" title="Dossier parent" onclick={up}><Icon name="up" size={14} /></button>
-    <button class="btn ghost sm icon" title="Actualiser" onclick={() => load(path)}><Icon name="refresh" size={14} /></button>
+    <button class="btn ghost sm icon" title={t('Dossier parent')} onclick={up}><Icon name="up" size={14} /></button>
+    <button class="btn ghost sm icon" title={t('Actualiser')} onclick={() => load(path)}><Icon name="refresh" size={14} /></button>
     <input class="input mono" bind:value={pathInput} onkeydown={(e) => e.key === 'Enter' && load(pathInput)} spellcheck="false" />
   </div>
   <div class="bar actions">
-    <button class="btn sm" onclick={pickUpload}><Icon name="upload" size={14} /> Envoyer</button>
-    <button class="btn sm icon" title="Envoyer un dossier" onclick={pickUploadDir}><Icon name="folderPlus" size={14} /></button>
-    <button class="btn sm" disabled={!selected.size} onclick={downloadSel}><Icon name="download" size={14} /> Télécharger</button>
+    <button class="btn sm" onclick={pickUpload}><Icon name="upload" size={14} /> {t('Envoyer')}</button>
+    <button class="btn sm icon" title={t('Envoyer un dossier')} onclick={pickUploadDir}><Icon name="folderPlus" size={14} /></button>
+    <button class="btn sm" disabled={!selected.size} onclick={downloadSel}><Icon name="download" size={14} /> {t('Télécharger')}</button>
     <span class="grow"></span>
-    <button class="btn ghost sm icon" title="Nouveau dossier" onclick={mkdir}><Icon name="plus" size={14} /></button>
-    <button class="btn ghost sm icon" title="Renommer" disabled={selected.size !== 1} onclick={rename}><Icon name="edit" size={14} /></button>
-    <button class="btn ghost sm icon" title="Supprimer" disabled={!selected.size} onclick={remove}><Icon name="trash" size={14} /></button>
+    <button class="btn ghost sm icon" title={t('Modifier le fichier')} disabled={!selectedFile} onclick={() => selectedFile && edit(selectedFile)}><Icon name="code" size={14} /></button>
+    <button class="btn ghost sm icon" title={t('Nouveau dossier')} onclick={mkdir}><Icon name="plus" size={14} /></button>
+    <button class="btn ghost sm icon" title={t('Renommer')} disabled={selected.size !== 1} onclick={rename}><Icon name="edit" size={14} /></button>
+    <button class="btn ghost sm icon" title={t('Supprimer')} disabled={!selected.size} onclick={remove}><Icon name="trash" size={14} /></button>
   </div>
 
   <div class="crumbs">
@@ -152,10 +166,11 @@
         <span class="dt">{date(en.mtime)}</span>
       </div>
     {:else}
-      {#if !loading}<p class="empty">Dossier vide</p>{/if}
+      {#if !loading}<p class="empty">{t('Dossier vide')}</p>{/if}
     {/each}
   </div>
-  {#if hover}<div class="drop">Déposez pour envoyer vers {path}</div>{/if}
+  {#if editing}<Editor {sessionId} path={editing} onclose={() => { editing = null; load(path); }} />{/if}
+  {#if hover}<div class="drop">{t('Déposez pour envoyer vers {path}', { path })}</div>{/if}
 </div>
 
 <style>

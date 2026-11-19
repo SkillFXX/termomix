@@ -1,4 +1,5 @@
-import { api, errMsg, type AppState, type Group, type Macro, type Server, type Settings } from './api';
+import { lang } from './i18n.svelte';
+import { api, defaultSettings, errMsg, type AppState, type Group, type Macro, type Server, type Settings } from './api';
 
 export interface Tab {
   id: string;
@@ -6,6 +7,8 @@ export interface Tab {
   server: Server;
   adhoc: boolean;
   title: string;
+  /** Session SSH ouverte (renseigné par le terminal). */
+  connected?: boolean;
 }
 
 export const app = $state({
@@ -13,10 +16,12 @@ export const app = $state({
   groups: [] as Group[],
   servers: [] as Server[],
   macros: [] as Macro[],
-  settings: { font_size: 14, scrollback: 10000, cursor_style: 'bar' } as Settings,
+  settings: { ...defaultSettings } as Settings,
   dataDir: '',
   version: '',
   view: 'hosts' as 'hosts' | 'macros',
+  settingsOpen: false,
+  settingsTab: 'general' as 'general' | 'terminal' | 'connection' | 'data' | 'about',
   tabs: [] as Tab[],
   active: null as string | null,
   toasts: [] as { id: number; kind: 'info' | 'error' | 'ok'; text: string }[],
@@ -26,7 +31,8 @@ export function apply(s: AppState) {
   app.groups = s.groups;
   app.servers = s.servers;
   app.macros = s.macros;
-  app.settings = s.settings;
+  app.settings = { ...defaultSettings, ...s.settings };
+  lang.value = app.settings.language;
   app.dataDir = s.data_dir;
   app.version = s.version;
 }
@@ -109,4 +115,10 @@ export function updateTransfer(p: import('./api').Progress) {
   if (i >= 0) transfers.list[i] = p;
   else transfers.list.push(p);
   if (p.state === 'done') setTimeout(() => (transfers.list = transfers.list.filter((t) => t.id !== p.id)), 3500);
+}
+
+export async function updateSettings(patch: Partial<Settings>) {
+  app.settings = { ...app.settings, ...patch };
+  lang.value = app.settings.language;
+  await attempt(() => api.saveSettings($state.snapshot(app.settings) as Settings));
 }

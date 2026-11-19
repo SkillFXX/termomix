@@ -71,15 +71,43 @@ fn default_delay() -> u32 {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(default)]
 pub struct Settings {
+    pub language: String,
+    pub splash: bool,
     pub font_size: u32,
+    pub line_height: f32,
     pub scrollback: u32,
     pub cursor_style: String,
+    pub cursor_blink: bool,
+    pub copy_on_select: bool,
+    pub auto_reconnect: bool,
+    pub reconnect_attempts: u32,
+    pub reconnect_delay: u32,
+    /// 0 = désactivé
+    pub keepalive: u32,
+    pub connect_timeout: u32,
+    pub confirm_close: bool,
 }
 
 impl Default for Settings {
     fn default() -> Self {
-        Settings { font_size: 14, scrollback: 10000, cursor_style: "bar".into() }
+        Settings {
+            language: "fr".into(),
+            splash: true,
+            font_size: 14,
+            line_height: 1.15,
+            scrollback: 10000,
+            cursor_style: "bar".into(),
+            cursor_blink: true,
+            copy_on_select: false,
+            auto_reconnect: true,
+            reconnect_attempts: 5,
+            reconnect_delay: 3,
+            keepalive: 30,
+            connect_timeout: 15,
+            confirm_close: true,
+        }
     }
 }
 

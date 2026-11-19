@@ -20,8 +20,10 @@ npm run tauri build    # paquets (deb, AppImage…)
 
 - Serveurs, groupes, mot de passe ou clé privée, commande de démarrage, connexion rapide `user@hôte:port`
 - Terminal xterm.js (WebGL), onglets, recherche, copier/coller `Ctrl+Maj+C/V`
+- Éditeur de fichiers distants intégré (coloration syntaxique, Ctrl+S, ouverture par double-clic dans l'explorateur)
 - Explorateur SFTP : navigation, envoi/téléchargement (dossiers inclus, glisser-déposer), renommer, supprimer
 - Macros : enregistrement des commandes tapées ou création manuelle, lancement en un clic, par serveur ou globales
+- Réglages : langue (français / anglais), terminal, reconnexion automatique, signal de maintien
 - Export/Import en fichier `.termomix`, chiffré (Argon2id + ChaCha20-Poly1305), sans cloud
 
 ## Données

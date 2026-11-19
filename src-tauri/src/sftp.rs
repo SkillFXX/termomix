@@ -1,7 +1,7 @@
 use crate::error::Result;
 use crate::ssh::Session;
 use russh_sftp::client::SftpSession;
-use russh_sftp::protocol::FileType;
+use russh_sftp::protocol::{FileType, OpenFlags};
 use serde::Serialize;
 use std::path::Path;
 use std::sync::Arc;
@@ -267,5 +267,25 @@ pub async fn remove(sftp: &SftpSession, path: &str, is_dir: bool) -> Result<()> 
     for d in order.into_iter().rev() {
         sftp.remove_dir(d).await?;
     }
+    Ok(())
+}
+
+/// Limite d'édition en ligne (les gros fichiers se téléchargent).
+pub const EDIT_MAX: u64 = 5 * 1024 * 1024;
+
+pub async fn read_text(sftp: &SftpSession, path: &str) -> Result<String> {
+    let size = sftp.metadata(path).await?.len();
+    if size > EDIT_MAX {
+        return Err(format!("FILE_TOO_LARGE:{size}").into());
+    }
+    let bytes = sftp.read(path).await?;
+    String::from_utf8(bytes).map_err(|_| "NOT_TEXT".into())
+}
+
+pub async fn write_text(sftp: &SftpSession, path: &str, content: &str) -> Result<()> {
+    // Le fichier existe déjà : ses permissions sont conservées, seul le contenu est remplacé.
+    let mut f = sftp.open_with_flags(path, OpenFlags::WRITE | OpenFlags::TRUNCATE | OpenFlags::CREATE).await?;
+    f.write_all(content.as_bytes()).await?;
+    f.shutdown().await?;
     Ok(())
 }

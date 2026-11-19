@@ -63,6 +63,12 @@ impl client::Handler for Client {
     }
 }
 
+#[derive(Serialize, Clone)]
+pub struct Closed {
+    pub id: String,
+    pub clean: bool,
+}
+
 #[derive(Serialize)]
 pub struct Connected {
     pub session_id: String,
@@ -77,9 +83,9 @@ pub struct ConnectInfo {
 }
 
 /// Ouvre la connexion TCP + SSH et authentifie. Ne crée pas de shell.
-pub async fn open(server: &Server, expected_fp: Option<String>) -> Result<ConnectInfo> {
+pub async fn open(server: &Server, expected_fp: Option<String>, keepalive: u32, timeout: u32) -> Result<ConnectInfo> {
     let cfg = Arc::new(client::Config {
-        keepalive_interval: Some(Duration::from_secs(30)),
+        keepalive_interval: (keepalive > 0).then(|| Duration::from_secs(keepalive as u64)),
         keepalive_max: 4,
         inactivity_timeout: None,
         nodelay: true,
@@ -88,7 +94,7 @@ pub async fn open(server: &Server, expected_fp: Option<String>) -> Result<Connec
     let state = HostKeyState::default();
     let handler = Client { expected: expected_fp.clone(), state: state.clone() };
     let addr = (server.host.as_str(), server.port);
-    let mut handle = match tokio::time::timeout(Duration::from_secs(15), client::connect(cfg, addr, handler)).await {
+    let mut handle = match tokio::time::timeout(Duration::from_secs(timeout.max(3) as u64), client::connect(cfg, addr, handler)).await {
         Err(_) => return Err(format!("Délai dépassé en se connectant à {}:{}", server.host, server.port).into()),
         Ok(Err(e)) => {
             if *state.mismatch.lock().unwrap() {
@@ -146,22 +152,25 @@ pub async fn start_shell(
     let session = Arc::new(Session { handle, tx, sftp: tokio::sync::Mutex::new(None) });
     let sid = id.clone();
     tokio::spawn(async move {
+        // Vrai si le serveur a terminé le shell lui-même (commande `exit`) : pas une coupure réseau.
+        let mut clean = false;
         loop {
             tokio::select! {
                 msg = chan.wait() => match msg {
                     Some(ChannelMsg::Data { data }) => { let _ = on_data.send(InvokeResponseBody::Raw(data.to_vec())); }
                     Some(ChannelMsg::ExtendedData { data, .. }) => { let _ = on_data.send(InvokeResponseBody::Raw(data.to_vec())); }
+                    Some(ChannelMsg::ExitStatus { .. }) => { clean = true; }
                     Some(ChannelMsg::Eof) | Some(ChannelMsg::Close) | None => break,
                     _ => {}
                 },
                 cmd = rx.recv() => match cmd {
                     Some(Cmd::Write(b)) => { if chan.data_bytes(b).await.is_err() { break; } }
                     Some(Cmd::Resize(c, r)) => { let _ = chan.window_change(c, r, 0, 0).await; }
-                    Some(Cmd::Close) | None => { let _ = chan.close().await; break; }
+                    Some(Cmd::Close) | None => { clean = true; let _ = chan.close().await; break; }
                 }
             }
         }
-        let _ = app.emit("ssh-closed", sid);
+        let _ = app.emit("ssh-closed", Closed { id: sid, clean });
     });
     Ok(session)
 }

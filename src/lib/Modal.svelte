@@ -1,7 +1,8 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
   import Icon from './Icon.svelte';
-  let { title, onclose, width = 520, children, footer }: { title: string; onclose: () => void; width?: number; children: Snippet; footer?: Snippet } = $props();
+  import { t } from './i18n.svelte';
+  let { title, onclose, width = 520, flush = false, children, footer }: { title: string; onclose: () => void; width?: number; flush?: boolean; children: Snippet; footer?: Snippet } = $props();
 </script>
 
 <svelte:window onkeydown={(e) => e.key === 'Escape' && onclose()} />
@@ -11,9 +12,9 @@
   <div class="modal" style:width="{width}px" role="dialog" aria-label={title}>
     <header>
       <h2>{title}</h2>
-      <button class="btn ghost icon sm" onclick={onclose} aria-label="Fermer"><Icon name="x" /></button>
+      <button class="btn ghost icon sm" onclick={onclose} aria-label={t('Fermer')}><Icon name="x" /></button>
     </header>
-    <div class="body">{@render children()}</div>
+    <div class="body" class:flush>{@render children()}</div>
     {#if footer}<footer>{@render footer()}</footer>{/if}
   </div>
 </div>
@@ -24,5 +25,6 @@
   header { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px 12px 20px; border-bottom: 1px solid var(--border); }
   h2 { font-size: 14px; font-weight: 600; font-family: var(--brand); }
   .body { padding: 18px 20px; overflow: auto; display: flex; flex-direction: column; gap: 14px; }
+  .body.flush { padding: 0; gap: 0; }
   footer { padding: 12px 20px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 8px; }
 </style>

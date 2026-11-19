@@ -2,29 +2,30 @@
   import { api, type Macro } from './api';
   import { app, attempt, confirmDlg, editMacro, reload } from './state.svelte';
   import Icon from './Icon.svelte';
+  import { t } from './i18n.svelte';
 
   async function remove(m: Macro) {
-    if (!(await confirmDlg(`Supprimer la macro « ${m.name} » ?`))) return;
+    if (!(await confirmDlg(t('Supprimer la macro « {name} » ?', { name: m.name })))) return;
     await attempt(() => api.deleteMacro(m.id));
     await reload();
   }
   async function duplicate(m: Macro) {
-    await attempt(() => api.saveMacro({ ...m, id: '', name: `${m.name} (copie)` }));
+    await attempt(() => api.saveMacro({ ...m, id: '', name: t('{name} (copie)', { name: m.name }) }));
     await reload();
   }
   const scope = (m: Macro) =>
     m.server_ids.length === 0
-      ? 'Tous les serveurs'
+      ? t('Tous les serveurs')
       : m.server_ids.map((id) => app.servers.find((s) => s.id === id)?.name).filter(Boolean).join(', ');
 </script>
 
 <div class="page">
   <header>
     <div>
-      <h1>Macros</h1>
-      <p class="muted">Séquences de commandes à lancer d'un clic dans n'importe quel terminal.</p>
+      <h1>{t('Macros')}</h1>
+      <p class="muted">{t('Séquences de commandes à lancer d\'un clic dans n\'importe quel terminal.')}</p>
     </div>
-    <button class="btn primary" onclick={() => editMacro(null)}><Icon name="plus" /> Macro</button>
+    <button class="btn primary" onclick={() => editMacro(null)}><Icon name="plus" /> {t('Macro')}</button>
   </header>
 
   {#each app.macros as m (m.id)}
@@ -35,17 +36,17 @@
           <div class="sub">{m.description ?? ''}{m.description ? ' · ' : ''}{scope(m)}</div>
         </div>
         <div class="acts">
-          <button class="btn ghost sm icon" title="Modifier" onclick={() => editMacro(m)}><Icon name="edit" size={14} /></button>
-          <button class="btn ghost sm icon" title="Dupliquer" onclick={() => duplicate(m)}><Icon name="copy" size={14} /></button>
-          <button class="btn ghost sm icon" title="Supprimer" onclick={() => remove(m)}><Icon name="trash" size={14} /></button>
+          <button class="btn ghost sm icon" title={t('Modifier')} onclick={() => editMacro(m)}><Icon name="edit" size={14} /></button>
+          <button class="btn ghost sm icon" title={t('Dupliquer')} onclick={() => duplicate(m)}><Icon name="copy" size={14} /></button>
+          <button class="btn ghost sm icon" title={t('Supprimer')} onclick={() => remove(m)}><Icon name="trash" size={14} /></button>
         </div>
       </div>
       <pre class="mono">{m.commands.join('\n')}</pre>
     </div>
   {:else}
     <div class="welcome">
-      <h2>Aucune macro</h2>
-      <p class="muted">Dans un terminal, cliquez sur « Enregistrer », tapez vos commandes puis arrêtez : elles deviennent une macro réutilisable. Vous pouvez aussi en créer une à la main.</p>
+      <h2>{t('Aucune macro')}</h2>
+      <p class="muted">{t('Dans un terminal, cliquez sur « Enregistrer », tapez vos commandes puis arrêtez : elles deviennent une macro réutilisable. Vous pouvez aussi en créer une à la main.')}</p>
     </div>
   {/each}
 </div>

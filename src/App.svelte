@@ -1,34 +1,48 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { listen } from '@tauri-apps/api/event';
-  import { api, type Progress } from './lib/api';
-  import { app, apply, closeTab, macroEditor, toast, updateTransfer } from './lib/state.svelte';
+  import { api, errMsg, type Progress } from './lib/api';
+  import { app, apply, closeTab, confirmDlg, macroEditor, toast, updateTransfer } from './lib/state.svelte';
+  import { t } from './lib/i18n.svelte';
   import Sidebar from './lib/Sidebar.svelte';
   import Hosts from './lib/Hosts.svelte';
   import Macros from './lib/Macros.svelte';
   import MacroEditor from './lib/MacroEditor.svelte';
   import Terminal from './lib/Terminal.svelte';
-  import DataDialog from './lib/DataDialog.svelte';
+  import Settings from './lib/Settings.svelte';
   import Dialogs from './lib/Dialogs.svelte';
   import Toasts from './lib/Toasts.svelte';
   import Splash from './lib/Splash.svelte';
   import Icon from './lib/Icon.svelte';
 
-  let showData = $state(false);
   let splash = $state(true);
 
   onMount(() => {
-    const min = new Promise((r) => setTimeout(r, 3000)); // une boucle complète de l'animation (30 images x 100 ms)
-    Promise.all([api.getState(), min])
-      .then(([s]) => { apply(s); app.ready = true; })
-      .catch((e) => toast(String(e), 'error'))
+    const t0 = performance.now();
+    api.getState()
+      .then(async (s) => {
+        apply(s);
+        app.ready = true;
+        // Une boucle complète de l'animation (30 images x 100 ms).
+        const rest = 3000 - (performance.now() - t0);
+        if (app.settings.splash && rest > 0) await new Promise((r) => setTimeout(r, rest));
+      })
+      .catch((e) => toast(errMsg(e), 'error'))
       .finally(() => (splash = false));
     const un = listen<Progress>('transfer', (e) => updateTransfer(e.payload));
     return () => { un.then((f) => f()); };
   });
 
+  async function requestClose(id: string) {
+    const tab = app.tabs.find((x) => x.id === id);
+    if (tab?.connected && app.settings.confirm_close) {
+      if (!(await confirmDlg(t('Fermer « {name} » ?', { name: tab.title }), t('La session SSH sera déconnectée.'), false))) return;
+    }
+    closeTab(id);
+  }
+
   function onKey(e: KeyboardEvent) {
-    if (e.ctrlKey && e.key === 'w' && app.active) { e.preventDefault(); closeTab(app.active); }
+    if (e.ctrlKey && e.key === 'w' && app.active) { e.preventDefault(); requestClose(app.active); }
     if (e.ctrlKey && e.key === 'Tab' && app.tabs.length) {
       e.preventDefault();
       const i = app.tabs.findIndex((t) => t.id === app.active);
@@ -43,24 +57,24 @@
 
 {#if app.ready}
   <div class="shell">
-    <Sidebar ondata={() => (showData = true)} />
+    <Sidebar />
     <div class="content">
       {#if app.tabs.length}
         <div class="tabs" role="tablist">
-          {#each app.tabs as t (t.id)}
+          {#each app.tabs as tb (tb.id)}
             <!-- svelte-ignore a11y_click_events_have_key_events, a11y_interactive_supports_focus -->
-            <div class="tab" class:on={app.active === t.id} role="tab" aria-selected={app.active === t.id}
-              onclick={() => (app.active = t.id)} onauxclick={(e) => e.button === 1 && closeTab(t.id)}>
+            <div class="tab" class:on={app.active === tb.id} role="tab" aria-selected={app.active === tb.id}
+              onclick={() => (app.active = tb.id)} onauxclick={(e) => e.button === 1 && requestClose(tb.id)}>
               <Icon name="terminal" size={14} />
-              <span class="tt">{t.title}</span>
-              <button class="x" aria-label="Fermer l'onglet" onclick={(e) => { e.stopPropagation(); closeTab(t.id); }}><Icon name="x" size={12} /></button>
+              <span class="tt">{tb.title}</span>
+              <button class="x" aria-label={t("Fermer l'onglet")} onclick={(e) => { e.stopPropagation(); requestClose(tb.id); }}><Icon name="x" size={12} /></button>
             </div>
           {/each}
         </div>
       {/if}
       <div class="stage">
-        {#each app.tabs as t (t.id)}
-          <div class="pane" class:show={app.active === t.id}><Terminal tab={t} active={app.active === t.id} /></div>
+        {#each app.tabs as tb (tb.id)}
+          <div class="pane" class:show={app.active === tb.id}><Terminal tab={tb} active={app.active === tb.id} /></div>
         {/each}
         {#if !app.active}
           <div class="pane show">{#if app.view === 'hosts'}<Hosts />{:else}<Macros />{/if}</div>
@@ -70,7 +84,7 @@
   </div>
 {/if}
 
-{#if showData}<DataDialog onclose={() => (showData = false)} />{/if}
+{#if app.settingsOpen}<Settings />{/if}
 {#if macroEditor.open}{#key macroEditor.macro}<MacroEditor />{/key}{/if}
 <Dialogs />
 <Toasts />

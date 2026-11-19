@@ -1,4 +1,5 @@
 import { Channel, invoke } from '@tauri-apps/api/core';
+import { translateError } from './i18n.svelte';
 
 export type AuthKind = 'password' | 'key';
 
@@ -36,10 +37,38 @@ export interface Macro {
 }
 
 export interface Settings {
+  language: 'fr' | 'en';
+  splash: boolean;
   font_size: number;
+  line_height: number;
   scrollback: number;
   cursor_style: 'bar' | 'block' | 'underline';
+  cursor_blink: boolean;
+  copy_on_select: boolean;
+  auto_reconnect: boolean;
+  reconnect_attempts: number;
+  reconnect_delay: number;
+  keepalive: number;
+  connect_timeout: number;
+  confirm_close: boolean;
 }
+
+export const defaultSettings: Settings = {
+  language: 'fr',
+  splash: true,
+  font_size: 14,
+  line_height: 1.15,
+  scrollback: 10000,
+  cursor_style: 'bar',
+  cursor_blink: true,
+  copy_on_select: false,
+  auto_reconnect: true,
+  reconnect_attempts: 5,
+  reconnect_delay: 3,
+  keepalive: 30,
+  connect_timeout: 15,
+  confirm_close: true,
+};
 
 export interface AppState {
   groups: Group[];
@@ -120,6 +149,8 @@ export const api = {
   sftpMkdir: (id: string, path: string) => invoke<void>('sftp_mkdir', { id, path }),
   sftpRename: (id: string, from: string, to: string) => invoke<void>('sftp_rename', { id, from, to }),
   sftpRemove: (id: string, path: string, isDir: boolean) => invoke<void>('sftp_remove', { id, path, isDir }),
+  sftpReadText: (id: string, path: string) => invoke<string>('sftp_read_text', { id, path }),
+  sftpWriteText: (id: string, path: string, content: string) => invoke<void>('sftp_write_text', { id, path, content }),
   sftpUpload: (id: string, local: string, remoteDir: string) => invoke<void>('sftp_upload', { id, local, remoteDir }),
   sftpDownload: (id: string, remote: string, isDir: boolean, localDir: string) =>
     invoke<void>('sftp_download', { id, remote, isDir, localDir }),
@@ -130,4 +161,4 @@ export const api = {
     invoke<{ servers: number; macros: number }>('import_data', { path, passphrase, replace }),
 };
 
-export const errMsg = (e: unknown) => (typeof e === 'string' ? e : e instanceof Error ? e.message : String(e));
+export const errMsg = (e: unknown) => translateError(typeof e === 'string' ? e : e instanceof Error ? e.message : String(e));

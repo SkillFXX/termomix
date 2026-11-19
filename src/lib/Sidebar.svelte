@@ -1,17 +1,17 @@
 <script lang="ts">
   import { app } from './state.svelte';
   import Icon from './Icon.svelte';
-  let { ondata }: { ondata: () => void } = $props();
+  import { t } from './i18n.svelte';
 
   const go = (v: 'hosts' | 'macros') => { app.view = v; app.active = null; };
 </script>
 
 <nav>
   <div class="brand"><img src="/logo-mark.png" alt="" width="30" height="30" /><span>Termo<b class="grad-text">mix</b></span></div>
-  <button class:on={!app.active && app.view === 'hosts'} onclick={() => go('hosts')}><Icon name="server" /> Serveurs</button>
-  <button class:on={!app.active && app.view === 'macros'} onclick={() => go('macros')}><Icon name="macro" /> Macros</button>
+  <button class:on={!app.active && app.view === 'hosts'} onclick={() => go('hosts')}><Icon name="server" /> {t('Serveurs')}</button>
+  <button class:on={!app.active && app.view === 'macros'} onclick={() => go('macros')}><Icon name="macro" /> {t('Macros')}</button>
   <div class="grow"></div>
-  <button onclick={ondata}><Icon name="archive" /> Export / Import</button>
+  <button onclick={() => { app.settingsTab = 'general'; app.settingsOpen = true; }}><Icon name="settings" /> {t('Réglages')}</button>
   <div class="ver">v{app.version}</div>
 </nav>
 

@@ -29,6 +29,10 @@
     folderPlus: 'M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM12 10v6M9 13h6',
     check: 'M5 12l5 5 9-10',
     alert: 'M12 4l9 16H3zM12 10v4M12 17h.01',
+    code: 'M8 8l-5 4 5 4M16 8l5 4-5 4M14 5l-4 14',
+    globe: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18',
+    plug: 'M9 3v5M15 3v5M6 8h12v4a6 6 0 0 1-12 0zM12 18v3',
+    info: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 11v5M12 8h.01',
     more: 'M5 12h.01M12 12h.01M19 12h.01',
   };
   let { name, size = 16 }: { name: string; size?: number } = $props();

@@ -2,6 +2,7 @@
   import { api, type Macro } from './api';
   import { app, attempt, macroEditor, reload } from './state.svelte';
   import Modal from './Modal.svelte';
+  import { t } from './i18n.svelte';
 
   const init = macroEditor.macro ?? {};
   let name = $state(init.name ?? '');
@@ -29,31 +30,31 @@
   }
 </script>
 
-<Modal title={init.id ? 'Modifier la macro' : 'Nouvelle macro'} onclose={close} width={560}>
+<Modal title={init.id ? t('Modifier la macro') : t('Nouvelle macro')} onclose={close} width={560}>
   <div class="field">
-    <label for="m-name">Nom</label>
+    <label for="m-name">{t('Nom')}</label>
     <!-- svelte-ignore a11y_autofocus -->
-    <input id="m-name" class="input" bind:value={name} placeholder="Mise à jour du système" autofocus />
+    <input id="m-name" class="input" bind:value={name} placeholder={t('Mise à jour du système')} autofocus />
   </div>
   <div class="field">
-    <label for="m-cmd">Commandes (une par ligne)</label>
+    <label for="m-cmd">{t('Commandes (une par ligne)')}</label>
     <textarea id="m-cmd" class="input" rows="8" bind:value={text} spellcheck="false" placeholder={'sudo apt update\nsudo apt upgrade -y'}></textarea>
   </div>
   <div class="row">
     <div class="field">
-      <label for="m-delay">Délai entre commandes (ms)</label>
+      <label for="m-delay">{t('Délai entre commandes (ms)')}</label>
       <input id="m-delay" class="input mono" type="number" min="0" step="50" bind:value={delay} />
     </div>
     <div class="field">
-      <label for="m-desc">Description</label>
+      <label for="m-desc">{t('Description')}</label>
       <input id="m-desc" class="input" bind:value={description} />
     </div>
   </div>
   <div class="field">
-    <label for="m-scope">Disponible sur</label>
+    <label for="m-scope">{t('Disponible sur')}</label>
     <select id="m-scope" class="input" onchange={(e) => (scoped = e.currentTarget.value === 'some')} value={scoped ? 'some' : 'all'}>
-      <option value="all">Tous les serveurs</option>
-      <option value="some">Certains serveurs</option>
+      <option value="all">{t('Tous les serveurs')}</option>
+      <option value="some">{t('Certains serveurs')}</option>
     </select>
     {#if scoped}
       <div class="servers">
@@ -65,8 +66,8 @@
   </div>
 
   {#snippet footer()}
-    <button class="btn" onclick={close}>Annuler</button>
-    <button class="btn primary" onclick={save}>Enregistrer</button>
+    <button class="btn" onclick={close}>{t('Annuler')}</button>
+    <button class="btn primary" onclick={save}>{t('Enregistrer')}</button>
   {/snippet}
 </Modal>
 

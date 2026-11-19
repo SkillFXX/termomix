@@ -202,7 +202,11 @@ async fn ssh_connect(
     }
     let host_id = format!("{}:{}", server.host, server.port);
     let expected = store.db.lock().unwrap().known_hosts.get(&host_id).cloned();
-    let info = ssh::open(&server, expected).await?;
+    let (ka, to) = {
+        let db = store.db.lock().unwrap();
+        (db.settings.keepalive, db.settings.connect_timeout)
+    };
+    let info = ssh::open(&server, expected, ka, to).await?;
 
     let id = new_id();
     let startup = server.startup_command.clone();
@@ -268,6 +272,18 @@ async fn sftp_rename(sessions: State<'_, Sessions>, id: String, from: String, to
 async fn sftp_remove(sessions: State<'_, Sessions>, id: String, path: String, is_dir: bool) -> Result<()> {
     let c = sftp::get(&sessions.get(&id)?).await?;
     sftp::remove(&c, &path, is_dir).await
+}
+
+#[tauri::command]
+async fn sftp_read_text(sessions: State<'_, Sessions>, id: String, path: String) -> Result<String> {
+    let c = sftp::get(&sessions.get(&id)?).await?;
+    sftp::read_text(&c, &path).await
+}
+
+#[tauri::command]
+async fn sftp_write_text(sessions: State<'_, Sessions>, id: String, path: String, content: String) -> Result<()> {
+    let c = sftp::get(&sessions.get(&id)?).await?;
+    sftp::write_text(&c, &path, &content).await
 }
 
 #[tauri::command]
@@ -347,6 +363,8 @@ pub fn run() {
             sftp_mkdir,
             sftp_rename,
             sftp_remove,
+            sftp_read_text,
+            sftp_write_text,
             sftp_upload,
             sftp_download,
             export_data,

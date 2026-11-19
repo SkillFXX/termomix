@@ -2,6 +2,7 @@
   import { api, type Group, type Server } from './api';
   import { app, attempt, confirmDlg, openTab, reload } from './state.svelte';
   import Icon from './Icon.svelte';
+  import { t } from './i18n.svelte';
   import Modal from './Modal.svelte';
   import ServerForm from './ServerForm.svelte';
 
@@ -44,13 +45,13 @@
   }
 
   async function remove(s: Server) {
-    if (!(await confirmDlg(`Supprimer « ${s.name} » ?`, 'Cette action est définitive.'))) return;
+    if (!(await confirmDlg(t('Supprimer « {name} » ?', { name: s.name }), t('Cette action est définitive.')))) return;
     await attempt(() => api.deleteServer(s.id));
     await reload();
   }
 
   async function duplicate(s: Server) {
-    await attempt(() => api.saveServer({ ...s, id: '', name: `${s.name} (copie)`, password: undefined, key_passphrase: undefined }));
+    await attempt(() => api.saveServer({ ...s, id: '', name: t('{name} (copie)', { name: s.name }), password: undefined, key_passphrase: undefined }));
     await reload();
   }
 
@@ -64,48 +65,48 @@
   }
 
   async function removeGroup(g: Group) {
-    if (!(await confirmDlg(`Supprimer le groupe « ${g.name} » ?`, 'Les serveurs du groupe sont conservés.'))) return;
+    if (!(await confirmDlg(t('Supprimer le groupe « {name} » ?', { name: g.name }), t('Les serveurs du groupe sont conservés.')))) return;
     await attempt(() => api.deleteGroup(g.id));
     await reload();
   }
 
-  const ago = (t: number | null) => {
-    if (!t) return 'Jamais connecté';
-    const d = Math.floor(Date.now() / 1000 - t);
-    if (d < 90) return "À l'instant";
-    if (d < 5400) return `Il y a ${Math.round(d / 60)} min`;
-    if (d < 129600) return `Il y a ${Math.round(d / 3600)} h`;
-    return `Il y a ${Math.round(d / 86400)} j`;
+  const ago = (ts: number | null) => {
+    if (!ts) return t('Jamais connecté');
+    const d = Math.floor(Date.now() / 1000 - ts);
+    if (d < 90) return t("À l'instant");
+    if (d < 5400) return t('Il y a {n} min', { n: Math.round(d / 60) });
+    if (d < 129600) return t('Il y a {n} h', { n: Math.round(d / 3600) });
+    return t('Il y a {n} j', { n: Math.round(d / 86400) });
   };
 </script>
 
 <div class="page">
   <header>
     <div>
-      <h1>Serveurs</h1>
-      <p class="muted">{app.servers.length} enregistré{app.servers.length > 1 ? 's' : ''}</p>
+      <h1>{t('Serveurs')}</h1>
+      <p class="muted">{t(app.servers.length > 1 ? '{n} enregistrés' : '{n} enregistré', { n: app.servers.length })}</p>
     </div>
     <div class="actions">
-      <button class="btn" onclick={() => { groupDlg = { id: '', name: '' }; groupName = ''; }}><Icon name="folderPlus" /> Groupe</button>
-      <button class="btn primary" onclick={() => (editing = null)}><Icon name="plus" /> Serveur</button>
+      <button class="btn" onclick={() => { groupDlg = { id: '', name: '' }; groupName = ''; }}><Icon name="folderPlus" /> {t('Groupe')}</button>
+      <button class="btn primary" onclick={() => (editing = null)}><Icon name="plus" /> {t('Serveur')}</button>
     </div>
   </header>
 
   <div class="bar">
     <div class="search">
       <Icon name="search" size={15} />
-      <input class="input" placeholder="Rechercher un serveur" bind:value={query} />
+      <input class="input" placeholder={t('Rechercher un serveur')} bind:value={query} />
     </div>
     <form class="quick" onsubmit={(e) => { e.preventDefault(); quickConnect(); }}>
       <Icon name="terminal" size={15} />
-      <input class="input mono" placeholder="Connexion rapide : utilisateur@hôte:port" bind:value={quick} />
-      <button class="btn" type="submit" disabled={!quick.trim()}>Connecter</button>
+      <input class="input mono" placeholder={t('Connexion rapide : utilisateur@hôte:port')} bind:value={quick} />
+      <button class="btn" type="submit" disabled={!quick.trim()}>{t('Connecter')}</button>
     </form>
   </div>
 
   {#if !query && recents.length}
     <section>
-      <h3>Récents</h3>
+      <h3>{t('Récents')}</h3>
       <div class="grid">
         {#each recents as s (s.id)}
           {@render card(s, false)}
@@ -119,13 +120,13 @@
       <div class="sec-head">
         <button class="toggle" onclick={() => (collapsed[sec.group?.id ?? 'none'] = !collapsed[sec.group?.id ?? 'none'])}>
           <span class="chev" class:open={!collapsed[sec.group?.id ?? 'none']}><Icon name="chevron" size={14} /></span>
-          <h3>{sec.group?.name ?? 'Sans groupe'}</h3>
+          <h3>{sec.group?.name ?? t('Sans groupe')}</h3>
           <span class="count">{sec.servers.length}</span>
         </button>
         {#if sec.group}
           <div class="sec-actions">
-            <button class="btn ghost sm icon" title="Renommer" onclick={() => { groupDlg = sec.group; groupName = sec.group!.name; }}><Icon name="edit" size={14} /></button>
-            <button class="btn ghost sm icon" title="Supprimer le groupe" onclick={() => removeGroup(sec.group!)}><Icon name="trash" size={14} /></button>
+            <button class="btn ghost sm icon" title={t('Renommer')} onclick={() => { groupDlg = sec.group; groupName = sec.group!.name; }}><Icon name="edit" size={14} /></button>
+            <button class="btn ghost sm icon" title={t('Supprimer le groupe')} onclick={() => removeGroup(sec.group!)}><Icon name="trash" size={14} /></button>
           </div>
         {/if}
       </div>
@@ -134,7 +135,7 @@
           {#each sec.servers as s (s.id)}
             {@render card(s, true)}
           {:else}
-            <p class="empty">Groupe vide.</p>
+            <p class="empty">{t('Groupe vide.')}</p>
           {/each}
         </div>
       {/if}
@@ -144,9 +145,9 @@
   {#if !app.servers.length}
     <div class="welcome">
       <img src="/logo-full.png" alt="Termomix" width="260" />
-      <h2>Aucun serveur pour le moment</h2>
-      <p class="muted">Ajoutez votre premier serveur, ou importez vos données depuis un autre ordinateur.</p>
-      <button class="btn primary" onclick={() => (editing = null)}><Icon name="plus" /> Ajouter un serveur</button>
+      <h2>{t('Aucun serveur pour le moment')}</h2>
+      <p class="muted">{t('Ajoutez votre premier serveur, ou importez vos données depuis un autre ordinateur.')}</p>
+      <button class="btn primary" onclick={() => (editing = null)}><Icon name="plus" /> {t('Ajouter un serveur')}</button>
     </div>
   {/if}
 </div>
@@ -159,14 +160,14 @@
       <div class="name">{s.name}</div>
       <div class="addr mono">{s.username}@{s.host}{s.port !== 22 ? `:${s.port}` : ''}</div>
       <div class="meta">
-        <Icon name={s.auth === 'key' ? 'key' : 'terminal'} size={12} /> {s.auth === 'key' ? 'Clé' : 'Mot de passe'} · {ago(s.last_connected)}
+        <Icon name={s.auth === 'key' ? 'key' : 'terminal'} size={12} /> {s.auth === 'key' ? t('Clé') : t('Mot de passe')} · {ago(s.last_connected)}
       </div>
     </div>
     {#if actions}
       <div class="card-actions" onclick={(e) => e.stopPropagation()}>
-        <button class="btn ghost sm icon" title="Modifier" onclick={() => (editing = s)}><Icon name="edit" size={14} /></button>
-        <button class="btn ghost sm icon" title="Dupliquer" onclick={() => duplicate(s)}><Icon name="copy" size={14} /></button>
-        <button class="btn ghost sm icon" title="Supprimer" onclick={() => remove(s)}><Icon name="trash" size={14} /></button>
+        <button class="btn ghost sm icon" title={t('Modifier')} onclick={() => (editing = s)}><Icon name="edit" size={14} /></button>
+        <button class="btn ghost sm icon" title={t('Dupliquer')} onclick={() => duplicate(s)}><Icon name="copy" size={14} /></button>
+        <button class="btn ghost sm icon" title={t('Supprimer')} onclick={() => remove(s)}><Icon name="trash" size={14} /></button>
       </div>
     {/if}
   </div>
@@ -177,15 +178,15 @@
 {/if}
 
 {#if groupDlg}
-  <Modal title={groupDlg.id ? 'Renommer le groupe' : 'Nouveau groupe'} width={400} onclose={() => (groupDlg = null)}>
+  <Modal title={groupDlg.id ? t('Renommer le groupe') : t('Nouveau groupe')} width={400} onclose={() => (groupDlg = null)}>
     <div class="field">
-      <label for="gname">Nom</label>
+      <label for="gname">{t('Nom')}</label>
       <!-- svelte-ignore a11y_autofocus -->
       <input id="gname" class="input" bind:value={groupName} autofocus onkeydown={(e) => e.key === 'Enter' && saveGroup()} />
     </div>
     {#snippet footer()}
-      <button class="btn" onclick={() => (groupDlg = null)}>Annuler</button>
-      <button class="btn primary" onclick={saveGroup} disabled={!groupName.trim()}>Enregistrer</button>
+      <button class="btn" onclick={() => (groupDlg = null)}>{t('Annuler')}</button>
+      <button class="btn primary" onclick={saveGroup} disabled={!groupName.trim()}>{t('Enregistrer')}</button>
     {/snippet}
   </Modal>
 {/if}
